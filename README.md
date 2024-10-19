@@ -2,8 +2,6 @@
 
 This software allows you to store account passwords for various websites or apps, avoiding the clutter or loss that can come from using paper tools to record them. The software enables you to add, delete, and edit data. Most importantly, you can quickly find the account you need using the search box. I hope you find it helpful, thank you!
 
-- - -
-
 ## Software Introduction
 
 ### Unset Password Interface
@@ -43,8 +41,6 @@ You can manually drag and drop to sort.
 
 ### Export to CSV file
 ![9](/README圖片/9.png)
-
-- - -
 
 ## Changelog
 
