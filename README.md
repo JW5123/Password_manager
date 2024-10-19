@@ -30,6 +30,7 @@ This software allows you to store account passwords for various websites or apps
 | after | before |
 | :------: | :------: |
 | ![7](Images/7.png) | ![8](Images/8.png) |
+
 You can manually drag and drop to sort.
 
 ### View Content
@@ -41,6 +42,9 @@ You can manually drag and drop to sort.
 
 ### Export to CSV file
 ![9](Images/9.png)
+
+## Expected to developed
+* Language selection is under development.
 
 ## Changelog
 
