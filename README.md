@@ -4,7 +4,7 @@ This software allows you to store account passwords for various websites or apps
 
 ## Software Introduction
 
-### Initial page
+### Initial interface
 ![1](Images/1.png)
 
 ### Setup Password
