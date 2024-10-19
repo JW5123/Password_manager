@@ -45,6 +45,7 @@ You can manually drag and drop to sort.
 
 ## Expected to developed
 * Language selection (e.g., English).
+* Version for macOS
 
 ## Changelog
 
