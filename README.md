@@ -32,6 +32,7 @@ This software allows you to store account passwords for various websites or apps
 | after | before |
 | :------: | :------: |
 | ![7](/README圖片/7.png) | ![8](/README圖片/8.png) |
+You can manually drag and drop to sort.
 
 ### View Content
 ![11](/README圖片/11.png)
