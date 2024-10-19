@@ -44,7 +44,7 @@ You can manually drag and drop to sort.
 ![9](Images/9.png)
 
 ## Expected to developed
-* Language selection is under development.
+* Language selection is under development (e.g., English).
 
 ## Changelog
 
