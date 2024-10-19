@@ -6,7 +6,7 @@ This software allows you to store account passwords for various websites or apps
 
 ### Unset Password Interface
 ![1](Images/1.png)
-* After installing the program, an initial password setup is required
+* After installing the program, you are required to set up a login password
 
 ### Setup Password
 ![2](Images/2.png)
