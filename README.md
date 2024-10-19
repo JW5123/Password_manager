@@ -43,7 +43,7 @@ You can manually drag and drop to sort.
 ### Export to CSV file
 ![9](Images/9.png)
 
-## Expected to developed
+## Expected to develop
 * Language selection (e.g., English).
 * Version for macOS
 
