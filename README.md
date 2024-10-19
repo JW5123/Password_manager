@@ -4,12 +4,12 @@ This software allows you to store account passwords for various websites or apps
 
 ## Software Introduction
 
-### Unset Password Interface
+### Initial page
 ![1](Images/1.png)
-* After installing the program, you are required to set up a login password
 
 ### Setup Password
 ![2](Images/2.png)
+* After installing the program, you are required to set up a login password
 
 ### Login interface
 ![3](Images/3.png)
