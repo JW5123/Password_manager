@@ -5,42 +5,42 @@ This software allows you to store account passwords for various websites or apps
 ## Software Introduction
 
 ### Unset Password Interface
-![1](/README圖片/1.png)
+![1](Images/1.png)
 * Set the password after installing the program.
 
 ### Setup Password
-![2](/README圖片/2.png)
+![2](Images/2.png)
 
 ### Login interface
-![3](/README圖片/3.png)
+![3](Images/3.png)
 
 ### Reset password
-![4](/README圖片/4.png)
+![4](Images/4.png)
 * Current password is required to reset.
 
 ### Main interface
-![5](/README圖片/5.png)
+![5](Images/5.png)
 
 ### Add data
-![6](/README圖片/6.png)
+![6](Images/6.png)
 * Name is required, otherwise you can't add it.
 * Editing is the same.
 
 ### List Sorting
 | after | before |
 | :------: | :------: |
-| ![7](/README圖片/7.png) | ![8](/README圖片/8.png) |
+| ![7](Images/7.png) | ![8](Images/8.png) |
 You can manually drag and drop to sort.
 
 ### View Content
-![11](/README圖片/11.png)
+![11](Images/11.png)
 
 ### Search
-![10](/README圖片/10.png)
+![10](Images/10.png)
 * When you enter a keyword, related information will be displayed.
 
 ### Export to CSV file
-![9](/README圖片/9.png)
+![9](Images/9.png)
 
 ## Changelog
 
