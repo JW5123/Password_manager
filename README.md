@@ -24,7 +24,7 @@ This software allows you to store account passwords for various websites or apps
 ### Add data
 ![6](Images/6.png)
 * Name is required, otherwise you can't add it.
-* Editing is the same.
+* The editing screen is the same as the adding screen
 
 ### List Sorting
 | after | before |
