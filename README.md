@@ -43,6 +43,9 @@ You can manually drag and drop to sort.
 ### Export to CSV file
 ![9](Images/9.png)
 
+### Database
+* The database file will be in your root directory, named "passwords.db".
+
 ## Expected to develop
 * Language selection (e.g., English).
 * Version for macOS
