@@ -1,6 +1,8 @@
 # Password manager
 
-This software allows you to store account passwords for various websites or apps, avoiding the clutter or loss that can come from using paper tools to record them. The software enables you to add, delete, and edit data. Most importantly, you can quickly find the account you need using the search box. I hope it will be helpful to you, thank you!
+This software allows you to store account passwords for various websites or apps, 
+avoiding the clutter or loss that can come from using paper tools to record them. The software enables you to add, delete, and edit data.
+Most importantly, you can quickly find the account you need using the search box.
 
 ## Software Introduction
 
