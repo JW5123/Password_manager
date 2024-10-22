@@ -7,6 +7,7 @@ from PyQt5.QtGui import QIcon
 import sqlite3
 import csv
 import os
+import shutil
 from hashlib import sha256
 
 class PasswordManager(QMainWindow):
@@ -24,7 +25,6 @@ class PasswordManager(QMainWindow):
         if not os.path.exists(db_path):
             original_db_path = os.path.join(os.path.dirname(__file__), 'original_passwords.db')
             if os.path.exists(original_db_path):
-                import shutil
                 shutil.copy(original_db_path, db_path)
 
         self.conn = sqlite3.connect(db_path)
