@@ -49,7 +49,7 @@ You can manually drag and drop to sort.
 
 ## Expected to develop
 - [ ] Language selection (e.g., English).
-- [x] Version for macOS
+- [x] ~~Version for macOS~~
 
 ## Changelog
 
