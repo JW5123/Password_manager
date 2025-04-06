@@ -1,15 +1,14 @@
 # Password manager
 
-This software lets you store account passwords for all kinds of websites or applications.
-You can add, delete and edit data. 
-Most importantly, can use the search box to quickly find the account you need.
+This software can store account passwords for all kinds of websites or applications.
+You can add, delete, edit data and use search box to quickly find the account you need.
 
 ## Software Introduction
 
-### Initial interface
+### Initial page
 ![1](Images/1.png)
 
-### Setup Password
+### Setup password
 ![2](Images/2.png)
 * After installing the program, you are required to set up a login password
 
@@ -26,7 +25,7 @@ Most importantly, can use the search box to quickly find the account you need.
 ### Add data
 ![6](Images/6.png)
 * Name is required, otherwise you can't add it.
-* The editing screen is the same as the adding screen
+* The editing page is the same as the adding page
 
 ### List Sorting
 | after | before |
