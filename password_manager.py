@@ -1,9 +1,9 @@
 import sys
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QLineEdit, QPushButton, 
                              QLabel, QListWidget, QInputDialog, QMessageBox, QHBoxLayout, QDialog, 
-                             QFormLayout, QDialogButtonBox, QAbstractItemView, QListWidgetItem, QFileDialog, QTextEdit)
+                             QFormLayout, QDialogButtonBox, QAbstractItemView, QListWidgetItem, QFileDialog, QTextEdit, QAction)
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QFont
 import sqlite3
 import csv
 import os
@@ -310,6 +310,13 @@ class NameListWidget(QWidget):
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("搜尋")
         self.search_box.textChanged.connect(self.filter_names)
+        
+        self.clear_action = QAction(QIcon("icon/remove.svg"), "清除", self.search_box)
+        self.clear_action.triggered.connect(self.clear_search_box)
+        self.search_box.addAction(self.clear_action, QLineEdit.TrailingPosition)
+        self.clear_action.setVisible(False)  # default not display
+        
+        self.search_box.setFont(QFont("Arial", 12))
         search_layout.addWidget(self.search_box)
 
         self.logout_button = QPushButton("登出")
@@ -318,7 +325,6 @@ class NameListWidget(QWidget):
 
         layout.addLayout(search_layout)
 
-        
         self.name_list = QListWidget()
         self.name_list.setSelectionMode(QAbstractItemView.SingleSelection)
         self.name_list.setDragDropMode(QAbstractItemView.InternalMove)  
@@ -386,8 +392,13 @@ class NameListWidget(QWidget):
             item = QListWidgetItem(name[0])
             self.name_list.addItem(item)
 
+    def clear_search_box(self):
+        self.search_box.clear()
+
     def filter_names(self):
         search_text = self.search_box.text().lower()
+        self.clear_action.setVisible(bool(search_text))
+
         for index in range(self.name_list.count()):
             item = self.name_list.item(index)
             item.setHidden(search_text not in item.text().lower())
