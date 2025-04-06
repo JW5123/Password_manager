@@ -49,8 +49,8 @@ You can manually drag and drop to sort.
 * The database file will be in your root directory, named "passwords.db".
 
 ## Expected to develop
-* Language selection (e.g., English).
-* Version for macOS
+- [ ] Language selection (e.g., English).
+- [x] Version for macOS
 
 ## Changelog
 
