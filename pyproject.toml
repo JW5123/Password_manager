@@ -1,0 +1,18 @@
+[project]
+name = "password-managment"
+version = "1.0.0"
+description = ""
+authors = [
+    {name = "JW5123",email = "Jay2002714@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.12,<4.0.0"
+dependencies = [
+    "cryptography (>=44.0.3,<45.0.0)",
+    "pyqt6 (>=6.9.0,<7.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
