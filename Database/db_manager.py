@@ -7,15 +7,15 @@ class DBManager:
     def __init__(self):
         self.conn = None
         self.cursor = None
-        self.master_password = None  # 存儲當前登入的主密碼
+        self.master_password = None
         self.setup_connection()
         
+    # 設置資料庫連接並初始化資料庫
     def setup_connection(self):
-        """設置資料庫連接並初始化資料庫"""
         base_path = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(base_path, 'passwords.db')  # 改為統一檔名
+        db_path = os.path.join(base_path, 'passwords.db')
 
-        # 如果資料庫不存在，複製初始資料庫（若你有初始模板）
+        # 資料庫不存在，複製初始資料庫
         if not os.path.exists(db_path):
             original_db_path = os.path.join(base_path, 'original_passwords.db')
             if os.path.exists(original_db_path):
@@ -25,11 +25,11 @@ class DBManager:
         self.cursor = self.conn.cursor()
         self.setup_db()
     
+    # 設置資料庫表結構
     def setup_db(self):
-        """設置資料庫表結構"""
         # 建立密碼存儲表
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS passwords (
-                            id INTEGER PRIMARY KEY, 
+                            id INTEGER NOT NULL UNIQUE, 
                             name TEXT NOT NULL, 
                             account TEXT, 
                             password TEXT, 
@@ -39,7 +39,8 @@ class DBManager:
         # 建立主密碼表
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS master_password (
                             id INTEGER PRIMARY KEY, 
-                            password TEXT NOT NULL)''')
+                            password TEXT NOT NULL,
+                            salt BLOB NOT NULL)''')
         
         # 檢查是否需要添加 order_index 欄位
         self.cursor.execute("PRAGMA table_info(passwords)")
@@ -56,118 +57,135 @@ class DBManager:
             
         self.conn.commit()
     
+    # 檢查是否已設置主密碼
     def has_master_password(self):
-        """檢查是否已設置主密碼"""
         self.cursor.execute("SELECT * FROM master_password")
         return self.cursor.fetchone() is not None
     
-    def set_master_password(self, hashed_password):
-        """設置主密碼"""
-        self.cursor.execute("INSERT INTO master_password (password) VALUES (?)", (hashed_password,))
+    # 設置主密碼
+    def set_master_password(self, hashed_password, salt):
+        self.cursor.execute("INSERT INTO master_password (password, salt) VALUES (?, ?)", (hashed_password, salt))
         self.conn.commit()
     
+    # 獲取主密碼
     def get_master_password(self):
-        """獲取主密碼"""
-        self.cursor.execute("SELECT password FROM master_password")
+        self.cursor.execute("SELECT password, salt FROM master_password")
         result = self.cursor.fetchone()
-        return result[0] if result else None
+        if result:
+            return result[0], result[1]
+        return None, None
     
-    def update_master_password(self, hashed_password):
-        """更新主密碼"""
-        self.cursor.execute("UPDATE master_password SET password = ? WHERE id = 1", (hashed_password,))
+    # 更新主密碼
+    def update_master_password(self, hashed_password, salt):
+        self.cursor.execute("UPDATE master_password SET password = ?, salt = ? WHERE id = 1", (hashed_password, salt))
         self.conn.commit()
     
+    # 設置當前登入的主密碼（用於加密/解密)
     def set_current_master_password(self, password):
-        """設置當前登入的主密碼（用於加密/解密）"""
         self.master_password = password
     
+    # 獲取所有名稱
     def get_all_names(self):
-        """獲取所有名稱"""
         self.cursor.execute("SELECT name FROM passwords ORDER BY order_index ASC")
         return self.cursor.fetchall()
     
+    def get_master_salt(self):
+        self.cursor.execute("SELECT salt FROM master_password")
+        result = self.cursor.fetchone()
+        return result[0] if result else None
+
+    # 獲取特定名稱的密碼條目
     def get_password_entry(self, name):
-        """獲取特定名稱的密碼條目"""
         self.cursor.execute("SELECT account, password, notes FROM passwords WHERE name = ?", (name,))
         entry = self.cursor.fetchone()
         
         if entry and self.master_password:
             encrypted_account, encrypted_password, encrypted_notes = entry
+            salt = self.get_master_salt()
             # 解密所有欄位
-            decrypted_account = decrypt_password(encrypted_account, self.master_password)
-            decrypted_password = decrypt_password(encrypted_password, self.master_password)
-            decrypted_notes = decrypt_password(encrypted_notes, self.master_password)
+            decrypted_account = decrypt_password(encrypted_account, self.master_password, salt)
+            decrypted_password = decrypt_password(encrypted_password, self.master_password, salt)
+            decrypted_notes = decrypt_password(encrypted_notes, self.master_password, salt)
             return (decrypted_account, decrypted_password, decrypted_notes)
         return entry
     
+    # 添加新的密碼條目
     def add_password_entry(self, name, account, password, notes):
-        """添加新的密碼條目"""
         # 加密所有欄位
-        if self.master_password:
-            encrypted_account = encrypt_password(account, self.master_password)
-            encrypted_password = encrypt_password(password, self.master_password)
-            encrypted_notes = encrypt_password(notes, self.master_password)
-        else:
-            encrypted_account = account
-            encrypted_password = password
-            encrypted_notes = notes
+        salt = self.get_master_salt()
+        encrypted_account = encrypt_password(account, self.master_password, salt)
+        encrypted_password = encrypt_password(password, self.master_password, salt)
+        encrypted_notes = encrypt_password(notes, self.master_password, salt)
+
+        self.cursor.execute("SELECT MAX(id) FROM passwords")
+        max_id = self.cursor.fetchone()[0]
+        new_id = (max_id + 1) if max_id is not None else 1
 
         self.cursor.execute("SELECT MAX(order_index) FROM passwords")
         max_order = self.cursor.fetchone()[0]
         new_order_index = (max_order + 1) if max_order is not None else 0
-        self.cursor.execute("INSERT INTO passwords (name, account, password, notes, order_index) VALUES (?, ?, ?, ?, ?)", 
-                           (name, encrypted_account, encrypted_password, encrypted_notes, new_order_index))
+
+        self.cursor.execute("INSERT INTO passwords (id, name, account, password, notes, order_index) VALUES (?, ?, ?, ?, ?, ?)",
+                            (new_id, name, encrypted_account, encrypted_password, encrypted_notes, new_order_index))
         self.conn.commit()
     
+    # 更新密碼條目
     def update_password_entry(self, old_name, new_name, account, password, notes):
-        """更新密碼條目"""
-        # 加密所有欄位
         if self.master_password:
-            encrypted_account = encrypt_password(account, self.master_password)
-            encrypted_password = encrypt_password(password, self.master_password)
-            encrypted_notes = encrypt_password(notes, self.master_password)
+            salt = self.get_master_salt()
+            encrypted_account = encrypt_password(account, self.master_password, salt)
+            encrypted_password = encrypt_password(password, self.master_password, salt)
+            encrypted_notes = encrypt_password(notes, self.master_password, salt)
         else:
             encrypted_account = account
             encrypted_password = password
             encrypted_notes = notes
 
         self.cursor.execute("UPDATE passwords SET name = ?, account = ?, password = ?, notes = ? WHERE name = ?",
-                           (new_name, encrypted_account, encrypted_password, encrypted_notes, old_name))
+                            (new_name, encrypted_account, encrypted_password, encrypted_notes, old_name))
         self.conn.commit()
     
+    # 刪除密碼條目
     def delete_password_entry(self, name):
-        """刪除密碼條目"""
         self.cursor.execute("DELETE FROM passwords WHERE name = ?", (name,))
         self.conn.commit()
+        self.reorder_password_ids()
+
+    def reorder_password_ids(self):
+        self.cursor.execute("SELECT rowid, name FROM passwords ORDER BY order_index ASC")
+        rows = self.cursor.fetchall()
+        for new_id, (rowid, name) in enumerate(rows, start=1):
+            self.cursor.execute("UPDATE passwords SET id = ? WHERE rowid = ?", (new_id, rowid))
+        self.conn.commit()
     
+    # 更新多個條目的順序索引
     def update_order_indices(self, name_order_dict):
-        """更新多個條目的順序索引"""
         for name, order_index in name_order_dict.items():
             self.cursor.execute("UPDATE passwords SET order_index = ? WHERE name = ?", (order_index, name))
         self.conn.commit()
     
+    # 更新單個條目的順序索引
     def update_order_index(self, name, order_index):
-        """更新單個條目的順序索引"""
         self.cursor.execute("UPDATE passwords SET order_index = ? WHERE name = ?", (order_index, name))
         self.conn.commit()
     
+    # 獲取所有密碼條目
     def get_all_entries(self):
-        """獲取所有密碼條目"""
         self.cursor.execute("SELECT name, account, password, notes FROM passwords")
         entries = self.cursor.fetchall()
         
         # 如果有主密碼，解密所有密碼
         if self.master_password:
+            salt = self.get_master_salt()
             decrypted_entries = []
             for name, encrypted_account, encrypted_password, encrypted_notes in entries:
-                decrypted_account = decrypt_password(encrypted_account, self.master_password)
-                decrypted_password = decrypt_password(encrypted_password, self.master_password)
-                decrypted_notes = decrypt_password(encrypted_notes, self.master_password)
+                decrypted_account = decrypt_password(encrypted_account, self.master_password, salt)
+                decrypted_password = decrypt_password(encrypted_password, self.master_password, salt)
+                decrypted_notes = decrypt_password(encrypted_notes, self.master_password, salt)
                 decrypted_entries.append((name, decrypted_account, decrypted_password, decrypted_notes))
             return decrypted_entries
         return entries
     
     def close(self):
-        """關閉資料庫連接"""
         if self.conn:
             self.conn.close()

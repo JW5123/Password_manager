@@ -1,6 +1,7 @@
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, 
                              QPushButton, QLabel, QHBoxLayout, QMessageBox)
 
+# 登入密碼重設對話框
 class ResetPasswordDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -12,7 +13,6 @@ class ResetPasswordDialog(QDialog):
     def init_ui(self):
         layout = QVBoxLayout()
 
-        # 當前密碼
         self.current_password_label = QLabel("當前密碼")
         layout.addWidget(self.current_password_label)
 

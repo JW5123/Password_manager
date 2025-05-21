@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import (QDialog, QFormLayout, QLineEdit, 
-                             QDialogButtonBox, QMessageBox, QTextEdit)
+                            QDialogButtonBox, QMessageBox, QTextEdit)
 
+# 新增密碼項目對話框
 class AddNameDialog(QDialog):
-    """新增密碼項目對話框"""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("新增資料")
@@ -24,7 +24,6 @@ class AddNameDialog(QDialog):
         self.password_input = QLineEdit()
         layout.addRow("密碼:", self.password_input)
 
-        # 使用多行文本編輯框
         self.notes_input = QTextEdit()
         layout.addRow("備註:", self.notes_input)
 
@@ -38,15 +37,15 @@ class AddNameDialog(QDialog):
 
         self.setLayout(layout)
 
+    # 保存輸入的數據
     def save_data(self):
-        """保存輸入的數據"""
         self.name = self.name_input.text().strip()
         self.account = self.account_input.text().strip()
         self.password = self.password_input.text().strip()
         self.notes = self.notes_input.toPlainText().strip()
 
         if not self.name:
-            QMessageBox.warning(self, "訊息", "名稱不能為空")
+            QMessageBox.warning(self, "訊息", "資料不能為空")
             return
 
         self.accept()

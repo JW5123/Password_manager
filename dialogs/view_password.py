@@ -1,39 +1,57 @@
 from PyQt6.QtWidgets import (QDialog, QFormLayout, QPushButton,
-                             QLabel, QHBoxLayout, QTextEdit, QMessageBox)
+                            QLabel, QLineEdit, QHBoxLayout, QTextEdit, QApplication)
 
-from dialogs.edit_password import EditPasswordDialog
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QCursor
 
+from .password_operations import edit_password_entry, delete_password_entry
+
+# 查看密碼項目對話框
 class ViewPasswordDialog(QDialog):
-    """查看密碼項目對話框"""
     def __init__(self, parent, name, account, password, notes):
         super().__init__(parent)
-        self.setWindowTitle(f"查看 {name} 的帳號和密碼")
+        self.setWindowTitle(f"{name}")
         self.parent_widget = parent
         self.setMinimumSize(300, 200)
         self.data_changed = False
-        self.init_ui(name, account, password, notes)
         self.name = name
         self.account = account
         self.password = password
         self.notes = notes
+        self.init_ui()
 
-    def init_ui(self, name, account, password, notes):
+    def init_ui(self):
         layout = QFormLayout()
 
-        self.name_label = QLabel(f"名稱: {name}")
-        layout.addRow(self.name_label)
+        # 名稱輸入框 (唯讀)
+        self.name_input = QLineEdit(self.name)
+        self.name_input.setReadOnly(True)
+        layout.addRow("名稱:", self.name_input)
 
-        self.account_label = QLabel(f"帳號: {account}")
-        layout.addRow(self.account_label)
+        # 帳號輸入框 (唯讀並可複製)
+        self.account_input = QLineEdit(self.account)
+        self.account_input.setReadOnly(True)
+        self.account_input.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.account_input.mousePressEvent = lambda e: self.copy_to_clipboard(self.account_input)
+        layout.addRow("帳號:", self.account_input)
 
-        self.password_label = QLabel(f"密碼: {password}")
-        layout.addRow(self.password_label)
+        # 密碼輸入框 (唯讀並可複製)
+        self.password_input = QLineEdit(self.password)
+        self.password_input.setReadOnly(True)
+        self.password_input.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))
+        self.password_input.mousePressEvent = lambda e: self.copy_to_clipboard(self.password_input)
+        layout.addRow("密碼:", self.password_input)
 
-        self.notes_label = QLabel("備註:")
-        self.notes_input = QTextEdit()
-        self.notes_input.setPlainText(notes)
+        # 備註文本框 (唯讀)
+        self.notes_input = QTextEdit(self)
+        self.notes_input.setPlainText(self.notes)
         self.notes_input.setReadOnly(True)
-        layout.addRow(self.notes_label, self.notes_input)
+        layout.addRow("備註:", self.notes_input)
+
+        # 複製提示標籤
+        self.copy_label = QLabel("")
+        self.copy_label.setVisible(False)
+        layout.addRow(self.copy_label)
 
         self.delete_button = QPushButton("刪除")
         self.delete_button.clicked.connect(self.delete_password)
@@ -49,49 +67,37 @@ class ViewPasswordDialog(QDialog):
 
         self.setLayout(layout)
 
+    # 複製內容到剪貼簿
+    def copy_to_clipboard(self, widget):
+        text = widget.text()
+        QApplication.clipboard().setText(text)
+        
+        self.copy_label.setText(f"已複製「{text}」到剪貼簿")
+        self.copy_label.setVisible(True)
+        
+        # 3秒後隱藏提示
+        QTimer.singleShot(3000, lambda: self.copy_label.setVisible(False))
+
     def edit_password(self):
-        """編輯密碼"""
-        dialog = EditPasswordDialog(self, self.name, self.account, self.password, self.notes)
-        if dialog.exec():
-            new_name, new_account, new_password, new_notes = dialog.new_name, dialog.new_account, dialog.new_password, dialog.new_notes
-            
-            # 更新資料庫
-            self.parent_widget.db_manager.update_password_entry(self.name, new_name, new_account, new_password, new_notes)
+        if edit_password_entry(self, self.parent_widget.db_manager, self.name):
+            # 重新讀取資料
+            account, password, notes = self.parent_widget.db_manager.get_password_entry(self.name)
+            self.account_input.setText(account)
+            self.password_input.setText(password)
+            self.notes_input.setPlainText(notes)
 
-            # 更新介面
-            self.name_label.setText(f"名稱: {new_name}")
-            self.account_label.setText(f"帳號: {new_account}")
-            self.password_label.setText(f"密碼: {new_password}")
-            self.notes_input.setPlainText(new_notes)
-
-            # 更新物件變數
-            self.name = new_name
-            self.account = new_account
-            self.password = new_password
-            self.notes = new_notes
-            
+            self.account = account
+            self.password = password
+            self.notes = notes
             self.data_changed = True
 
-        self.close()
-
     def delete_password(self):
-        """刪除密碼"""
-        reply = QMessageBox(self)
-        reply.setWindowTitle('訊息')
-        reply.setText('確定要刪除此資料嗎？')
-
-        delete_button = reply.addButton("刪除", QMessageBox.ButtonRole.ActionRole)
-        cancel_button = reply.addButton("取消", QMessageBox.ButtonRole.RejectRole)
-        
-        reply.exec()
-
-        if reply.clickedButton() == delete_button:
-            self.parent_widget.db_manager.delete_password_entry(self.name)
+        if delete_password_entry(self, self.parent_widget.db_manager, self.name):
             self.data_changed = True
             self.close()
 
+    # 關閉視窗時觸發
     def closeEvent(self, event):
-        """關閉視窗時觸發"""
         if self.data_changed:
             self.parent_widget.load_names()
         super().closeEvent(event)

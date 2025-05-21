@@ -1,12 +1,13 @@
 from PyQt6.QtWidgets import QMainWindow, QMessageBox
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import Qt
 
-from db_manager import DBManager
+from Database.db_manager import DBManager
 from main_password_widget import MainPasswordWidget
+from settings_widget import SettingsManager
 
+# 密碼管理器主視窗設定
 class PasswordManager(QMainWindow):
-    # 密碼管理器主視窗設定
     def __init__(self):
         super().__init__()
 
@@ -15,10 +16,16 @@ class PasswordManager(QMainWindow):
 
         # 設置視窗標題和大小
         self.setWindowTitle("密碼管理系統")
-        self.setGeometry(100, 100, 400, 300)
+        self.setGeometry(100, 100, 500, 400)
 
         # 初始化數據庫管理器
         self.db_manager = DBManager()
+
+        # 初始化設定管理器
+        self.settings_manager = SettingsManager()
+        
+        # 套用已儲存的主題
+        self.settings_manager.apply_theme(self)
 
         # 設置主密碼介面為中央元件
         self.main_password_widget = MainPasswordWidget(self)
