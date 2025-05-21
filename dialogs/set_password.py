@@ -1,8 +1,8 @@
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, 
                              QLabel, QDialogButtonBox, QFormLayout, QMessageBox)
 
+# 設定登入密碼
 class SetPasswordDialog(QDialog):
-    """設定登入密碼對話框"""
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("設定登入密碼")
@@ -27,8 +27,8 @@ class SetPasswordDialog(QDialog):
 
         self.setLayout(layout)
 
+    # 檢查輸入的密碼是否一致
     def check_password(self):
-        """檢查兩次輸入的密碼是否一致"""
         if self.password_input.text() == self.confirm_password_input.text():
             self.new_password = self.password_input.text()
             self.accept()
