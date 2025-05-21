@@ -1,7 +1,6 @@
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, 
-                             QLabel, QDialogButtonBox, QFormLayout, QMessageBox)
+                            QLabel, QDialogButtonBox, QFormLayout, QMessageBox)
 
-# 設定登入密碼
 class SetPasswordDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
