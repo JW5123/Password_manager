@@ -16,7 +16,7 @@ class PasswordManager(QMainWindow):
 
         # 設置視窗標題和大小
         self.setWindowTitle("密碼管理系統")
-        self.setGeometry(100, 100, 500, 400)
+        self.setGeometry(100, 100, 600, 500)
 
         # 初始化數據庫管理器
         self.db_manager = DBManager()

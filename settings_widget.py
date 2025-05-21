@@ -1,5 +1,7 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                            QLabel, QComboBox, QGroupBox, QMessageBox, QListWidget)
+                            QLabel, QComboBox, QGroupBox, QMessageBox, QListWidget,
+                            QListWidgetItem, QScrollArea, QDialog, QLineEdit, QFormLayout, 
+                            QDialogButtonBox, QMenu)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from settings_manager import SettingsManager
@@ -16,6 +18,8 @@ class SettingsWidget(QWidget):
         self.settings = self.settings_manager.load_settings()
 
         self.temp_theme = self.settings.get('theme', 'Light Blue')
+
+        self.temp_categories = self.settings.get('categories', [])
         
         self.init_ui()
         
@@ -57,48 +61,105 @@ class SettingsWidget(QWidget):
         appearance_group.setLayout(appearance_layout)
         main_layout.addWidget(appearance_group)
         
-        # 分類設定
         category_group = QGroupBox("分類設定")
-        category_layout = QVBoxLayout()
+        category_outer_layout = QHBoxLayout()
 
-        
+        # 新增分類按鈕
+        self.add_category_button = QPushButton("新增分類")
+        self.add_category_button.clicked.connect(self.add_category_dialog)
+        category_outer_layout.addWidget(self.add_category_button)
 
-        category_group.setLayout(category_layout)
+        # 分類列表（可滾動）
+        self.category_list_widget = QListWidget()
+        self.category_list_widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.category_list_widget.customContextMenuRequested.connect(self.show_category_menu)
+        for cat in self.temp_categories:
+            self.category_list_widget.addItem(cat)
+        category_outer_layout.addWidget(self.category_list_widget)
+
+        category_group.setLayout(category_outer_layout)
         main_layout.addWidget(category_group)
 
+        scroll_area = QScrollArea()
+        scroll_widget = QWidget()
+        scroll_widget.setLayout(main_layout)
+        scroll_area.setWidget(scroll_widget)
+        scroll_area.setWidgetResizable(True)
 
-        # 按鈕區域
+        full_layout = QVBoxLayout()
+        full_layout.addWidget(scroll_area)
+
+        # 底部按鈕區固定
         button_layout = QHBoxLayout()
-        
         self.save_button = QPushButton("儲存設定")
         self.save_button.clicked.connect(self.save_settings)
-        button_layout.addWidget(self.save_button)
-        
         self.cancel_button = QPushButton("返回")
         self.cancel_button.clicked.connect(self.go_back)
+        button_layout.addWidget(self.save_button)
         button_layout.addWidget(self.cancel_button)
-        
-        main_layout.addLayout(button_layout)
-        main_layout.addStretch(1)
-        
-        self.setLayout(main_layout)
-    
+
+        full_layout.addLayout(button_layout)
+        self.setLayout(full_layout)
+
     # 主題選擇變更時觸發
     def theme_changed(self, theme_name):
         self.temp_theme = theme_name
+
+    def add_category_dialog(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("新增分類")
+        layout = QFormLayout(dialog)
+        input_field = QLineEdit()
+        layout.addRow("分類名稱:", input_field)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("新增")
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("取消")
+        layout.addWidget(buttons)
+
+        buttons.accepted.connect(lambda: self.confirm_add_category(dialog, input_field.text()))
+        buttons.rejected.connect(dialog.reject)
+
+        dialog.exec()
+
+    def confirm_add_category(self, dialog, category_name):
+        category_name = category_name.strip()
+        if not category_name.strip():
+            QMessageBox.warning(self, "錯誤", "分類名稱不能為空白")
+            return
+
+        if not category_name or category_name in self.temp_categories:
+            QMessageBox.warning(self, "錯誤", "分類名稱無效或已存在")
+            return
+        self.temp_categories.append(category_name)
+        self.category_list_widget.addItem(category_name)
+        dialog.accept()
+
+    def show_category_menu(self, pos):
+        item = self.category_list_widget.itemAt(pos)
+        if not item:
+            return
+
+        menu = QMenu(self)
+        delete_action = menu.addAction("刪除分類")
+        action = menu.exec(self.category_list_widget.mapToGlobal(pos))
+        if action == delete_action:
+            category_name = item.text()
+            self.temp_categories.remove(category_name)
+            self.category_list_widget.takeItem(self.category_list_widget.row(item))
     
     # 儲存設定
     def save_settings(self):
-        # 更新設定
         self.settings['theme'] = self.temp_theme
+        self.settings['categories'] = self.temp_categories
 
         if self.settings_manager.save_settings(self.settings):
-            # 套用主題
+            self.settings_manager.settings = self.settings_manager.load_settings()
             self.settings_manager.set_theme(self.temp_theme, self.parent)
-            # QMessageBox.information(self, "訊息", "設定已儲存")
+            QMessageBox.information(self, "訊息", "設定已儲存")
         else:
             QMessageBox.warning(self, "錯誤", "無法儲存設定")
-    
+
     # 返回主畫面
     def go_back(self):
         from name_list_widget import NameListWidget

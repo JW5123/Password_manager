@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLineEdit, QPushButton, 
                             QListWidget, QHBoxLayout, QAbstractItemView, QFileDialog, QMessageBox,
-                            QListWidgetItem, QMenuBar, QMenu)
+                            QListWidgetItem, QMenuBar, QMenu, QComboBox)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont, QAction, QIcon
 
@@ -64,6 +64,14 @@ class NameListWidget(QWidget):
         self.search_box.setFont(QFont("Arial", 12))
         search_layout.addWidget(self.search_box)
 
+        # 分類下拉選單
+        self.category_combo = QComboBox()
+        self.category_combo.addItem("全部")
+        for category in self.settings_manager.get_categories():
+            self.category_combo.addItem(category)
+        self.category_combo.currentTextChanged.connect(self.load_names_by_category)
+        search_layout.addWidget(self.category_combo)
+
         self.logout_button = QPushButton("登出")
         self.logout_button.clicked.connect(self.logout)
         search_layout.addWidget(self.logout_button)
@@ -102,10 +110,10 @@ class NameListWidget(QWidget):
         if item is None:
             return
 
-        context_menu = QMenu()
+        context_menu = QMenu(self)
 
-        menu_style = load_qss("CSS/styles.qss")
-        context_menu.setStyleSheet(menu_style)
+        # menu_style = load_qss("CSS/styles.qss")
+        # context_menu.setStyleSheet(menu_style)
 
         view_action = QAction("查看", self)
         view_action.triggered.connect(lambda: self.view_account_password(item))
@@ -205,7 +213,7 @@ class NameListWidget(QWidget):
     # 匯出資料為CSV檔案
     def export_to_csv(self):
         file_path, _ = QFileDialog.getSaveFileName(
-            self, "儲存檔案", "密碼儲存簿.xlsx", 
+            self, "儲存檔案", "密碼儲存簿", 
             "Excel Files CSV Files (*.csv);;(*.xlsx);;All Files (*)"
         )
 
@@ -249,12 +257,18 @@ class NameListWidget(QWidget):
             self.parent.setCentralWidget(MainPasswordWidget(self.parent))
         
 
-    # 載入名稱列表
     def load_names(self):
+        self.load_names_by_category(self.category_combo.currentText())
+
+    def load_names_by_category(self, category):
         self.name_list.clear()
-        names = self.db_manager.get_all_names()
-        for name in names:
-            item = QListWidgetItem(name[0])
+        if category == "全部":
+            entries = self.db_manager.get_all_entries()
+        else:
+            entries = self.db_manager.get_entries_by_category(category)
+
+        for entry in entries:
+            item = QListWidgetItem(entry[0])
             self.name_list.addItem(item)
 
     # 清除搜尋框
@@ -274,9 +288,13 @@ class NameListWidget(QWidget):
     def add_name(self):
         dialog = AddNameDialog(self)
         if dialog.exec():
-            name, account, password, notes = dialog.name, dialog.account, dialog.password, dialog.notes
-            self.db_manager.add_password_entry(name, account, password, notes)
-            self.load_names()
+            name = dialog.name
+            account = dialog.account
+            password = dialog.password
+            notes = dialog.notes
+            category = dialog.category
+            self.db_manager.add_password_entry(name, account, password, notes, category)
+            self.load_names_by_category(self.category_combo.currentText())
 
     # 查看帳號密碼詳情
     def view_account_password(self, item):

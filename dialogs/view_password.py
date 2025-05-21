@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QDialog, QFormLayout, QPushButton,
-                            QLabel, QLineEdit, QHBoxLayout, QTextEdit, QApplication)
+                            QLabel, QLineEdit, QHBoxLayout, QTextEdit, QApplication, QMessageBox)
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QCursor
@@ -79,9 +79,15 @@ class ViewPasswordDialog(QDialog):
         QTimer.singleShot(3000, lambda: self.copy_label.setVisible(False))
 
     def edit_password(self):
-        if edit_password_entry(self, self.parent_widget.db_manager, self.name):
+        new_name = edit_password_entry(self.parent_widget, self.parent_widget.db_manager, self.name)
+        if new_name:
+            # 更新本地變數
+            self.name = new_name
+            self.name_input.setText(new_name)
+
             # 重新讀取資料
-            account, password, notes = self.parent_widget.db_manager.get_password_entry(self.name)
+            entry = self.parent_widget.db_manager.get_password_entry(self.name)
+            account, password, notes = entry
             self.account_input.setText(account)
             self.password_input.setText(password)
             self.notes_input.setPlainText(notes)
@@ -90,6 +96,9 @@ class ViewPasswordDialog(QDialog):
             self.password = password
             self.notes = notes
             self.data_changed = True
+
+            # 立即更新父視窗的列表
+            self.parent_widget.load_names()
 
     def delete_password(self):
         if delete_password_entry(self, self.parent_widget.db_manager, self.name):

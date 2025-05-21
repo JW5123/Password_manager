@@ -79,3 +79,9 @@ class SettingsManager:
                     return False
             return True
         return False
+    
+    def get_categories(self):
+        return self.settings.get('categories', [])
+
+    def set_categories(self, category_list):
+        self.settings['categories'] = category_list

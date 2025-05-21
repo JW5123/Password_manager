@@ -45,6 +45,13 @@ class DBManager:
         # 檢查是否需要添加 order_index 欄位
         self.cursor.execute("PRAGMA table_info(passwords)")
         columns = [column[1] for column in self.cursor.fetchall()]
+
+        # 檢查是否需要添加 category 欄位
+        self.cursor.execute("PRAGMA table_info(passwords)")
+        columns = [column[1] for column in self.cursor.fetchall()]
+        if 'category' not in columns:
+            self.cursor.execute("ALTER TABLE passwords ADD COLUMN category TEXT")
+
         
         if 'order_index' not in columns:
             self.cursor.execute("ALTER TABLE passwords ADD COLUMN order_index INTEGER")
@@ -110,7 +117,7 @@ class DBManager:
         return entry
     
     # 添加新的密碼條目
-    def add_password_entry(self, name, account, password, notes):
+    def add_password_entry(self, name, account, password, notes, category=None):
         # 加密所有欄位
         salt = self.get_master_salt()
         encrypted_account = encrypt_password(account, self.master_password, salt)
@@ -125,12 +132,12 @@ class DBManager:
         max_order = self.cursor.fetchone()[0]
         new_order_index = (max_order + 1) if max_order is not None else 0
 
-        self.cursor.execute("INSERT INTO passwords (id, name, account, password, notes, order_index) VALUES (?, ?, ?, ?, ?, ?)",
-                            (new_id, name, encrypted_account, encrypted_password, encrypted_notes, new_order_index))
+        self.cursor.execute("INSERT INTO passwords (id, name, account, password, notes, order_index, category) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                            (new_id, name, encrypted_account, encrypted_password, encrypted_notes, new_order_index, category))
         self.conn.commit()
     
     # 更新密碼條目
-    def update_password_entry(self, old_name, new_name, account, password, notes):
+    def update_password_entry(self, old_name, new_name, account, password, notes, category=None):
         if self.master_password:
             salt = self.get_master_salt()
             encrypted_account = encrypt_password(account, self.master_password, salt)
@@ -141,8 +148,10 @@ class DBManager:
             encrypted_password = password
             encrypted_notes = notes
 
-        self.cursor.execute("UPDATE passwords SET name = ?, account = ?, password = ?, notes = ? WHERE name = ?",
-                            (new_name, encrypted_account, encrypted_password, encrypted_notes, old_name))
+        self.cursor.execute(
+            "UPDATE passwords SET name = ?, account = ?, password = ?, notes = ?, category = ? WHERE name = ?",
+            (new_name, encrypted_account, encrypted_password, encrypted_notes, category, old_name)
+        )
         self.conn.commit()
     
     # 刪除密碼條目
@@ -171,10 +180,32 @@ class DBManager:
     
     # 獲取所有密碼條目
     def get_all_entries(self):
-        self.cursor.execute("SELECT name, account, password, notes FROM passwords")
+        self.cursor.execute("SELECT name, account, password, notes, category FROM passwords")
         entries = self.cursor.fetchall()
         
         # 如果有主密碼，解密所有密碼
+        if self.master_password:
+            salt = self.get_master_salt()
+            decrypted_entries = []
+            for name, encrypted_account, encrypted_password, encrypted_notes, category in entries:
+                decrypted_account = decrypt_password(encrypted_account, self.master_password, salt)
+                decrypted_password = decrypt_password(encrypted_password, self.master_password, salt)
+                decrypted_notes = decrypt_password(encrypted_notes, self.master_password, salt)
+                decrypted_entries.append((name, decrypted_account, decrypted_password, decrypted_notes, category))
+            return decrypted_entries
+        return entries
+    
+    def get_all_categories(self):
+        self.cursor.execute("SELECT DISTINCT category FROM passwords WHERE category IS NOT NULL")
+        return [row[0] for row in self.cursor.fetchall() if row[0]]
+
+    def get_entries_by_category(self, category):
+        if category == "全部":
+            return self.get_all_entries()
+
+        self.cursor.execute("SELECT name, account, password, notes FROM passwords WHERE category = ?", (category,))
+        entries = self.cursor.fetchall()
+
         if self.master_password:
             salt = self.get_master_salt()
             decrypted_entries = []
@@ -182,9 +213,15 @@ class DBManager:
                 decrypted_account = decrypt_password(encrypted_account, self.master_password, salt)
                 decrypted_password = decrypt_password(encrypted_password, self.master_password, salt)
                 decrypted_notes = decrypt_password(encrypted_notes, self.master_password, salt)
-                decrypted_entries.append((name, decrypted_account, decrypted_password, decrypted_notes))
+                decrypted_entries.append((name, decrypted_account, decrypted_password, decrypted_notes, category))
             return decrypted_entries
         return entries
+    
+    def get_entry_category(self, name):
+        self.cursor.execute("SELECT category FROM passwords WHERE name = ?", (name,))
+        result = self.cursor.fetchone()
+        return result[0] if result else None
+
     
     def close(self):
         if self.conn:

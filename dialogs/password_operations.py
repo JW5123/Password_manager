@@ -4,17 +4,20 @@ from dialogs.edit_password import EditPasswordDialog
 # 編輯資料
 def edit_password_entry(parent, db_manager, name):
     account, password, notes = db_manager.get_password_entry(name)
-    dialog = EditPasswordDialog(parent, name, account, password, notes)
+    category = db_manager.get_entry_category(name)
+    dialog = EditPasswordDialog(parent, name, account, password, notes, category)
 
     if dialog.exec():
         new_name = dialog.new_name
         new_account = dialog.new_account
         new_password = dialog.new_password
         new_notes = dialog.new_notes
+        new_category = dialog.new_category
 
-        db_manager.update_password_entry(name, new_name, new_account, new_password, new_notes)
-        return True  # 資料有變更
-    return False
+        db_manager.update_password_entry(name, new_name, new_account, new_password, new_notes, new_category)
+        return new_name
+
+    return None
 
 
 # 刪除資料
