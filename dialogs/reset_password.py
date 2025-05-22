@@ -1,11 +1,14 @@
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, 
                              QPushButton, QLabel, QHBoxLayout, QMessageBox)
 
+from utils.svg_icon_set import PasswordVisibilityController
+
 # 登入密碼重設對話框
 class ResetPasswordDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("登入密碼重設")
+        self.setFixedSize(300, 250)
         self.current_password = None
         self.new_password = None
         self.init_ui()
@@ -18,6 +21,7 @@ class ResetPasswordDialog(QDialog):
 
         self.current_password_input = QLineEdit()
         self.current_password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.current_pwd_visibility_controller = PasswordVisibilityController(self.current_password_input, self)
         layout.addWidget(self.current_password_input)
 
         self.new_password_label = QLabel("新密碼")
@@ -25,6 +29,7 @@ class ResetPasswordDialog(QDialog):
 
         self.new_password_input = QLineEdit()
         self.new_password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.new_pwd_visibility_controller = PasswordVisibilityController(self.new_password_input, self)
         layout.addWidget(self.new_password_input)
 
         self.confirm_password_label = QLabel("確認密碼")
@@ -32,6 +37,7 @@ class ResetPasswordDialog(QDialog):
 
         self.confirm_password_input = QLineEdit()
         self.confirm_password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.confirm_pwd_visibility_controller = PasswordVisibilityController(self.confirm_password_input, self)
         layout.addWidget(self.confirm_password_input)
 
         button_layout = QHBoxLayout()

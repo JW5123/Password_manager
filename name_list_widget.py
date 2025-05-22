@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLineEdit, QPushButton, 
                             QListWidget, QHBoxLayout, QAbstractItemView, QFileDialog, QMessageBox,
-                            QListWidgetItem, QMenuBar, QMenu, QComboBox)
-from PyQt6.QtCore import Qt
+                            QListWidgetItem, QMenuBar, QMenu, QComboBox, QStyle)
+from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont, QAction, QIcon
 
 import pandas as pd
@@ -56,7 +56,8 @@ class NameListWidget(QWidget):
         self.search_box.setPlaceholderText("搜尋")
         self.search_box.textChanged.connect(self.filter_names)
         
-        self.clear_action = QAction(QIcon("icon/remove.svg"), "清除", self.search_box)
+        icon = self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxCritical)
+        self.clear_action = QAction(icon, "清除", self.search_box)
         self.clear_action.triggered.connect(self.clear_search_box)
         self.search_box.addAction(self.clear_action, QLineEdit.ActionPosition.TrailingPosition)
         self.clear_action.setVisible(False)  # 預設不顯示
@@ -111,9 +112,6 @@ class NameListWidget(QWidget):
             return
 
         context_menu = QMenu(self)
-
-        # menu_style = load_qss("CSS/styles.qss")
-        # context_menu.setStyleSheet(menu_style)
 
         view_action = QAction("查看", self)
         view_action.triggered.connect(lambda: self.view_account_password(item))

@@ -1,11 +1,11 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel, QHBoxLayout, QMessageBox
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QFont, QAction
 
 from dialogs.set_password import SetPasswordDialog
 from dialogs.reset_password import ResetPasswordDialog
 from password_encryption import hash_password, verify_password
 from name_list_widget import NameListWidget
+from utils.svg_icon_set import PasswordVisibilityController
 import os
 
 # 主密碼設定頁面
@@ -30,6 +30,7 @@ class MainPasswordWidget(QWidget):
             self.password_input = QLineEdit()
             self.password_input.setPlaceholderText("請輸入登入密碼")
             self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
+            self.pwd_input_visibility_controller = PasswordVisibilityController(self.password_input, self)
             self.password_input.returnPressed.connect(self.verify_master_password)
             self.password_input.setFixedWidth(300)
             

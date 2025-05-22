@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import (QDialog, QFormLayout, QLineEdit, 
                             QDialogButtonBox, QMessageBox, QTextEdit, QComboBox, QPlainTextEdit,
-                            QFrame)
+                            QFrame, QHBoxLayout, QPushButton)
 
 # 新增密碼項目對話框
 class AddNameDialog(QDialog):
@@ -40,13 +40,17 @@ class AddNameDialog(QDialog):
         self.notes_input.setFrameShadow(QFrame.Shadow.Sunken)
         layout.addRow("備註:", self.notes_input)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("新增")
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("取消")
+        button_layout = QHBoxLayout()
+        self.submit_button = QPushButton("新增")
+        self.submit_button.clicked.connect(self.save_data)
+        button_layout.addWidget(self.submit_button)
 
-        buttons.accepted.connect(self.save_data)
-        buttons.rejected.connect(self.reject)
-        layout.addWidget(buttons)
+        self.cancel_button = QPushButton("取消")
+        self.cancel_button.clicked.connect(self.reject)
+        button_layout.addWidget(self.cancel_button)
+
+        # 這裡是重點：讓按鈕佔據一整列
+        layout.addRow(button_layout)
 
         self.setLayout(layout)
 

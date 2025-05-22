@@ -14,17 +14,17 @@ class SettingsManager:
         "Light Cyan": 'light_cyan_500.xml'
     }
     
+    # 初始化設定管理器
     def __init__(self):
-        """初始化設定管理器"""
         self.settings = self.load_settings()
     
+    # 取得設定檔案路徑
     def get_settings_path(self):
-        """取得設定檔案路徑"""
         base_path = os.path.dirname(os.path.abspath(__file__))
         return os.path.join(base_path, 'settings.json')
     
+    # 從檔案載入設定
     def load_settings(self):
-        """從檔案載入設定"""
         settings_path = self.get_settings_path()
         
         if os.path.exists(settings_path):
@@ -36,8 +36,8 @@ class SettingsManager:
                 return {'theme': 'Light Blue'}
         return {'theme': 'Light Blue'}
     
+    # 儲存設定到檔案
     def save_settings(self, settings):
-        """儲存設定到檔案"""
         settings_path = self.get_settings_path()
         
         try:
@@ -48,17 +48,17 @@ class SettingsManager:
             print(f"儲存設定時發生錯誤: {str(e)}")
             return False
     
+    # 取得目前設定的主題名稱
     def get_theme(self):
-        """取得目前設定的主題名稱"""
         return self.settings.get('theme', 'Light Blue')
     
+    # 取得目前主題對應的檔案名稱
     def get_theme_file(self):
-        """取得目前主題對應的檔案名稱"""
         theme_name = self.get_theme()
         return self.THEMES.get(theme_name, 'light_blue.xml')
     
+    # 套用目前的主題到指定的部件
     def apply_theme(self, widget):
-        """套用目前的主題到指定的部件"""
         try:
             theme_file = self.get_theme_file()
             apply_stylesheet(widget, theme=theme_file)
@@ -67,8 +67,8 @@ class SettingsManager:
             print(f"套用主題時發生錯誤: {str(e)}")
             return False
     
+    # 設定主題並選擇性地套用到部件
     def set_theme(self, theme_name, widget=None):
-        """設定主題並選擇性地套用到部件"""
         if theme_name in self.THEMES:
             self.settings['theme'] = theme_name
             if widget:
