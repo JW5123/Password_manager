@@ -2,6 +2,7 @@ from PyQt6.QtGui import QPainter, QPixmap, QColor, QIcon, QAction, QPalette
 from PyQt6.QtCore import QSize, Qt, QTimer
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QLineEdit
+from utils.path_helper import resource_path
 
 def colored_svg_icon(svg_path: str, color: str, size: QSize = QSize(20, 20)) -> QIcon:
     renderer = QSvgRenderer(svg_path)
@@ -50,7 +51,8 @@ class PasswordVisibilityController:
         bg_color = palette.color(QPalette.ColorRole.Window)
         is_dark = bg_color.lightness() < 128
         icon_color = "#ffffff" if is_dark else "#000000"
-        icon_path = "icon/show_eye.svg" if self.show_password else "icon/hide_eye.svg"
+        icon_name = "show_eye.svg" if self.show_password else "hide_eye.svg"
+        icon_path = resource_path(f"icon/{icon_name}")
         icon = colored_svg_icon(icon_path, icon_color, QSize(20, 20))
         self.eye_action.setIcon(icon)
 

@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 from Database.db_manager import DBManager
 from app.main_password_widget import MainPasswordWidget
 from preferences.settings_widget import SettingsManager
+from utils.path_helper import resource_path
 
 # 密碼管理器主視窗設定
 class PasswordManager(QMainWindow):
@@ -12,10 +13,10 @@ class PasswordManager(QMainWindow):
         super().__init__()
 
         # 設置視窗圖標
-        self.setWindowIcon(QIcon('password-manager.png'))
+        self.setWindowIcon(QIcon(resource_path('icon/PasswordManager.ico')))
 
         # 設置視窗標題和大小
-        self.setWindowTitle("密碼管理系統")
+        self.setWindowTitle("密碼管理器")
         self.setGeometry(100, 100, 600, 500)
 
         # 初始化數據庫管理器

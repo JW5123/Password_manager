@@ -1,12 +1,12 @@
 [project]
-name = "password-managment"
+name = "PasswordManager"
 version = "1.0.0"
 description = ""
 authors = [
     {name = "JW5123",email = "Jay2002714@gmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.12,<4.0.0"
+requires-python = "<3.14,>=3.12"
 dependencies = [
     "cryptography (>=44.0.3,<45.0.0)",
     "pyqt6 (>=6.9.0,<7.0.0)",
@@ -15,10 +15,14 @@ dependencies = [
     "qtawesome (>=1.4.0,<2.0.0)",
     "pandas (>=2.2.3,<3.0.0)",
     "openpyxl (>=3.1.5,<4.0.0)",
-    "qtwidgets (>=1.1,<2.0)"
+    "qtwidgets (>=1.1,<2.0)",
+    "pyinstaller (>=6.13.0,<7.0.0)",
+    "pillow (>=11.2.1,<12.0.0)"
 ]
-
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false

@@ -108,17 +108,32 @@ class SettingsWidget(QWidget):
     def add_category_dialog(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("新增分類")
-        layout = QFormLayout(dialog)
+        dialog.setFixedSize(300, 150)  # 可調整視窗大小
+
+        layout = QVBoxLayout()
+
+        # 標籤
+        label = QLabel("分類名稱")
+        layout.addWidget(label)
+
+        # 輸入欄位
         input_field = QLineEdit()
-        layout.addRow("分類名稱:", input_field)
+        layout.addWidget(input_field)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
-        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("新增")
-        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("取消")
-        layout.addWidget(buttons)
+        # 按鈕區域（水平排列）
+        button_layout = QHBoxLayout()
+        add_button = QPushButton("新增")
+        cancel_button = QPushButton("取消")
+        button_layout.addWidget(add_button)
+        button_layout.addWidget(cancel_button)
 
-        buttons.accepted.connect(lambda: self.confirm_add_category(dialog, input_field.text()))
-        buttons.rejected.connect(dialog.reject)
+        layout.addLayout(button_layout)
+
+        dialog.setLayout(layout)
+
+        # 連接按鈕事件
+        add_button.clicked.connect(lambda: self.confirm_add_category(dialog, input_field.text()))
+        cancel_button.clicked.connect(dialog.reject)
 
         dialog.exec()
 

@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from utils.password_encryption import encrypt_password, decrypt_password
+from utils.path_helper import get_database_path
 
 class DBManager:
     def __init__(self):
@@ -13,11 +14,8 @@ class DBManager:
     # 設置資料庫連接並初始化資料庫
     def setup_connection(self):
         # 放在使用者家目錄的隱藏資料夾
-        # home_dir = os.path.expanduser('~')
-        # app_dir = os.path.join(home_dir, '.password_manager')
-        # os.makedirs(app_dir, exist_ok=True)
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        db_path = os.path.join(base_path, 'passwords.db')
+        # base_path = os.path.dirname(os.path.abspath(__file__))
+        db_path = get_database_path()
 
         self.conn = sqlite3.connect(db_path)
         self.cursor = self.conn.cursor()
@@ -82,8 +80,8 @@ class DBManager:
             return result[0]
         return None
     
+    # 將資料庫撈出的條目列表批次解密
     def _decrypt_entry_rows(self, rows):
-        """將資料庫撈出的條目列表批次解密"""
         decrypted_entries = []
         for name, account, password, notes, category in rows:
             decrypted_account, decrypted_password, decrypted_notes = self._decrypt_entry_fields(
@@ -155,8 +153,8 @@ class DBManager:
         rows = self.cursor.fetchall()
         return self._decrypt_entry_rows(rows) if self.master_password else rows
 
+    # 獲取所有不為空的分類
     def get_all_categories(self):
-        """獲取所有不為空的分類"""
         self.cursor.execute("SELECT DISTINCT category FROM passwords WHERE category IS NOT NULL AND category != ''")
         return [row[0] for row in self.cursor.fetchall()]
     
@@ -204,13 +202,13 @@ class DBManager:
     def update_order_indices(self, name_order_dict):
         for name, order_index in name_order_dict.items():
             self.cursor.execute("UPDATE passwords SET order_index = ? WHERE name = ?", 
-                               (order_index, name))
+                                (order_index, name))
         self.conn.commit()
     
     # 更新單個條目的順序索引
     def update_order_index(self, name, order_index):
         self.cursor.execute("UPDATE passwords SET order_index = ? WHERE name = ?", 
-                           (order_index, name))
+                            (order_index, name))
         self.conn.commit()
 
     # 根據分類回傳名稱清單

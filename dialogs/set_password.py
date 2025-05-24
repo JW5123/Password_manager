@@ -1,7 +1,6 @@
-import sys
 from PyQt6.QtWidgets import (
     QApplication, QDialog, QLineEdit, QPushButton, QHBoxLayout,
-    QFormLayout, QMessageBox
+    QVBoxLayout, QLabel, QMessageBox
 )
 
 from utils.svg_icon_set import PasswordVisibilityController
@@ -11,36 +10,42 @@ class SetPasswordDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle("設定登入密碼")
         self.new_password = None
-        self.setFixedSize(350, 180)
+        self.setFixedSize(300, 180)
         self.init_ui()
 
     def init_ui(self):
-        layout = QFormLayout()
+        layout = QVBoxLayout()
 
-        # 密碼欄位
+        # 輸入密碼標籤與欄位
+        password_label = QLabel("輸入密碼")
+        layout.addWidget(password_label)
+
         self.password_input = QLineEdit()
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-
         self.pwd_visibility_controller = PasswordVisibilityController(self.password_input, self)
-        layout.addRow("輸入密碼:", self.password_input)
+        layout.addWidget(self.password_input)
 
-        # 確認密碼欄位
+        # 確認密碼標籤與欄位
+        confirm_label = QLabel("確認密碼")
+        layout.addWidget(confirm_label)
+
         self.confirm_password_input = QLineEdit()
         self.confirm_password_input.setEchoMode(QLineEdit.EchoMode.Password)
         self.confirm_pwd_visibility_controller = PasswordVisibilityController(self.confirm_password_input, self)
-        layout.addRow("確認密碼:", self.confirm_password_input)
+        layout.addWidget(self.confirm_password_input)
 
-        # 底部按鈕
-        buttons_layout = QHBoxLayout()
+        # 按鈕區塊
+        button_layout = QHBoxLayout()
         self.submit_button = QPushButton("確定")
         self.submit_button.clicked.connect(self.check_password)
-        buttons_layout.addWidget(self.submit_button)
+        button_layout.addWidget(self.submit_button)
 
         self.cancel_button = QPushButton("取消")
         self.cancel_button.clicked.connect(self.reject)
-        buttons_layout.addWidget(self.cancel_button)
+        button_layout.addWidget(self.cancel_button)
 
-        layout.addRow(buttons_layout)
+        layout.addLayout(button_layout)
+
         self.setLayout(layout)
 
     def check_password(self):
