@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import (QDialog, QFormLayout, QLineEdit,
                             QPushButton, QLabel, QHBoxLayout, QTextEdit, QMessageBox,
-                            QComboBox, QFrame)
+                            QComboBox, QFrame, QPlainTextEdit)
+
+from utils.password_generator import PasswordGeneratorDialog
 
 # 編輯密碼項目
 class EditPasswordDialog(QDialog):
@@ -30,9 +32,13 @@ class EditPasswordDialog(QDialog):
         self.password_input.setEchoMode(QLineEdit.EchoMode.Normal)
         layout.addRow("密碼:", self.password_input)
 
+        # 生成密碼按鈕
+        self.generate_password_btn = QPushButton("生成密碼")
+        self.generate_password_btn.clicked.connect(self.open_password_generator)
+        layout.addRow("", self.generate_password_btn)
         
         self.category_combo = QComboBox()
-        self.category_combo.addItem("")  # 預設空（無分類）
+        self.category_combo.addItem("全部")
         for category in self.parent_widget.settings_manager.get_categories():
             self.category_combo.addItem(category)
 
@@ -44,7 +50,7 @@ class EditPasswordDialog(QDialog):
 
         layout.addRow("分類:", self.category_combo)
 
-        self.notes_input = QTextEdit(self.new_notes)
+        self.notes_input = QPlainTextEdit()
         self.notes_input.setFrameShape(QFrame.Shape.StyledPanel)
         self.notes_input.setFrameShadow(QFrame.Shadow.Sunken)
         layout.addRow("備註:", self.notes_input)
@@ -62,6 +68,12 @@ class EditPasswordDialog(QDialog):
         layout.addRow(button_layout)
 
         self.setLayout(layout)
+    
+    def open_password_generator(self):
+        dialog = PasswordGeneratorDialog(self)
+        if dialog.exec():
+            generated_password = dialog.get_password()
+            self.password_input.setText(generated_password)
 
     # 提交編輯結果
     def on_submit(self):

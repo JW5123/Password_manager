@@ -3,8 +3,7 @@ from dialogs.edit_password import EditPasswordDialog
 
 # 編輯資料
 def edit_password_entry(parent, db_manager, name):
-    account, password, notes = db_manager.get_password_entry(name)
-    category = db_manager.get_entry_category(name)
+    account, password, notes, category = db_manager.get_password_entry(name)
     dialog = EditPasswordDialog(parent, name, account, password, notes, category)
 
     if dialog.exec():
@@ -33,5 +32,5 @@ def delete_password_entry(parent, db_manager, name):
 
     if reply.clickedButton() == delete_button:
         db_manager.delete_password_entry(name)
-        return True  # 有刪除
+        return True
     return False

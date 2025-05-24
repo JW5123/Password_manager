@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
                             QDialogButtonBox, QMenu)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-from settings_manager import SettingsManager
+from preferences.settings_manager import SettingsManager
 
 class SettingsWidget(QWidget):
     def __init__(self, parent):
@@ -162,5 +162,5 @@ class SettingsWidget(QWidget):
 
     # 返回主畫面
     def go_back(self):
-        from name_list_widget import NameListWidget
+        from app.account_list_widget import NameListWidget
         self.parent.setCentralWidget(NameListWidget(self.parent))

@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QDialog, QFormLayout, QPushButton,
-                            QLabel, QLineEdit, QHBoxLayout, QTextEdit, QApplication, QMessageBox)
+                            QLabel, QLineEdit, QHBoxLayout, QApplication, QPlainTextEdit)
 
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QCursor
@@ -8,7 +8,7 @@ from .password_operations import edit_password_entry, delete_password_entry
 
 # 查看密碼項目對話框
 class ViewPasswordDialog(QDialog):
-    def __init__(self, parent, name, account, password, notes):
+    def __init__(self, parent, name, account, password, notes, category=None):
         super().__init__(parent)
         self.setWindowTitle(f"{name}")
         self.parent_widget = parent
@@ -18,6 +18,7 @@ class ViewPasswordDialog(QDialog):
         self.account = account
         self.password = password
         self.notes = notes
+        self.category = category
         self.init_ui()
 
     def init_ui(self):
@@ -42,8 +43,13 @@ class ViewPasswordDialog(QDialog):
         self.password_input.mousePressEvent = lambda e: self.copy_to_clipboard(self.password_input)
         layout.addRow("密碼:", self.password_input)
 
+        # 分類輸入框 (唯讀)
+        self.category_input = QLineEdit(self.category)
+        self.category_input.setReadOnly(True)
+        layout.addRow("分類:", self.category_input)
+
         # 備註文本框 (唯讀)
-        self.notes_input = QTextEdit(self)
+        self.notes_input = QPlainTextEdit(self)
         self.notes_input.setPlainText(self.notes)
         self.notes_input.setReadOnly(True)
         layout.addRow("備註:", self.notes_input)
@@ -87,10 +93,15 @@ class ViewPasswordDialog(QDialog):
 
             # 重新讀取資料
             entry = self.parent_widget.db_manager.get_password_entry(self.name)
-            account, password, notes = entry
+            account, password, notes, category = entry
             self.account_input.setText(account)
             self.password_input.setText(password)
             self.notes_input.setPlainText(notes)
+
+            # 更新分類欄位
+            self.category = category
+            category_display = self.category if self.category else "未分類"
+            self.category_input.setText(category_display)
 
             self.account = account
             self.password = password

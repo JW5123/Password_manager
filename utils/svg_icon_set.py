@@ -35,7 +35,8 @@ class PasswordVisibilityController:
         QTimer.singleShot(0, self.update_icon)
 
     def on_text_changed(self, text: str):
-        self.eye_action.setVisible(bool(text))  # 有文字時顯示，否則隱藏
+        # 有文字時顯示，否則隱藏
+        self.eye_action.setVisible(bool(text))  
 
     def toggle(self):
         self.show_password = not self.show_password

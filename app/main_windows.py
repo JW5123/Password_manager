@@ -3,8 +3,8 @@ from PyQt6.QtGui import QIcon, QAction
 from PyQt6.QtCore import Qt
 
 from Database.db_manager import DBManager
-from main_password_widget import MainPasswordWidget
-from settings_widget import SettingsManager
+from app.main_password_widget import MainPasswordWidget
+from preferences.settings_widget import SettingsManager
 
 # 密碼管理器主視窗設定
 class PasswordManager(QMainWindow):

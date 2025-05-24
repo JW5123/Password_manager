@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication
-from main_windows import PasswordManager
+from app.main_windows import PasswordManager
 
 def main():
     app = QApplication(sys.argv)

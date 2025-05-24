@@ -3,8 +3,8 @@ from PyQt6.QtCore import Qt
 
 from dialogs.set_password import SetPasswordDialog
 from dialogs.reset_password import ResetPasswordDialog
-from password_encryption import hash_password, verify_password
-from name_list_widget import NameListWidget
+from utils.password_encryption import hash_password, verify_password
+from app.account_list_widget import NameListWidget
 from utils.svg_icon_set import PasswordVisibilityController
 import os
 

@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import (QDialog, QFormLayout, QLineEdit, 
-                            QDialogButtonBox, QMessageBox, QTextEdit, QComboBox, QPlainTextEdit,
+                            QMessageBox, QComboBox, QPlainTextEdit,
                             QFrame, QHBoxLayout, QPushButton)
+
+from utils.password_generator import PasswordGeneratorDialog
 
 # 新增密碼項目對話框
 class AddNameDialog(QDialog):
@@ -27,15 +29,18 @@ class AddNameDialog(QDialog):
         self.password_input = QLineEdit()
         layout.addRow("密碼:", self.password_input)
 
+        # 生成密碼按鈕
+        self.generate_password_btn = QPushButton("生成密碼")
+        self.generate_password_btn.clicked.connect(self.open_password_generator)
+        layout.addRow("", self.generate_password_btn)
+
         self.category_combo = QComboBox()
-        self.category_combo.addItem("")
+        self.category_combo.addItem("全部")
         for category in self.parent_widget.settings_manager.get_categories():
             self.category_combo.addItem(category)
         layout.addRow("分類:", self.category_combo)
 
-        # 在 init_ui 方法中
         self.notes_input = QPlainTextEdit()
-        # 在 PyQt6 中使用 QFrame 的常數來設定邊框樣式
         self.notes_input.setFrameShape(QFrame.Shape.StyledPanel)
         self.notes_input.setFrameShadow(QFrame.Shadow.Sunken)
         layout.addRow("備註:", self.notes_input)
@@ -49,10 +54,15 @@ class AddNameDialog(QDialog):
         self.cancel_button.clicked.connect(self.reject)
         button_layout.addWidget(self.cancel_button)
 
-        # 這裡是重點：讓按鈕佔據一整列
         layout.addRow(button_layout)
 
         self.setLayout(layout)
+    
+    def open_password_generator(self):
+        dialog = PasswordGeneratorDialog(self)
+        if dialog.exec():
+            generated_password = dialog.get_password()
+            self.password_input.setText(generated_password)
 
     # 保存輸入的數據
     def save_data(self):

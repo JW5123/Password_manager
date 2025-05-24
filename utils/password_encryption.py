@@ -52,4 +52,4 @@ def decrypt_password(encrypted_password, master_password, salt):
         return decrypted_password
     except Exception as e:
         # 解密失敗的情況
-        return "Decryption failed"
+        return ""
