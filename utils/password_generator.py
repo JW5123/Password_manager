@@ -103,13 +103,13 @@ class PasswordGeneratorDialog(QDialog):
         layout.addLayout(bottom_layout)
         self.setLayout(layout)
 
+    # 滑桿數值改變時更新顯示並重新生成密碼
     def on_length_changed(self, value):
-        """滑桿數值改變時更新顯示並重新生成密碼"""
         self.length_display.setText(str(value))
         self.generate_password()
 
+    # 根據選擇的條件生成密碼
     def generate_password(self):
-        """根據選擇的條件生成密碼"""
         characters = ""
         
         if self.lowercase_btn.isChecked():
@@ -130,6 +130,6 @@ class PasswordGeneratorDialog(QDialog):
         self.generated_password = ''.join(random.choice(characters) for _ in range(length))
         self.password_display.setText(self.generated_password)
 
+    # 返回生成的密碼
     def get_password(self):
-        """返回生成的密碼"""
         return self.generated_password
