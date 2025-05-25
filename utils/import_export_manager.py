@@ -51,6 +51,7 @@ class ImportExportManager:
                 account = str(row['帳號']).strip()
                 password = str(row['密碼']).strip()
                 notes = str(row['備註']) if not pd.isna(row['備註']) else ''
+                category = str(row['類別']) if not pd.isna(row['類別']) else ''
 
                 # 檢查名稱是否為空
                 if not name:
@@ -64,7 +65,7 @@ class ImportExportManager:
 
                 # 嘗試添加資料
                 try:
-                    self.db_manager.add_password_entry(name, account, password, notes)
+                    self.db_manager.add_password_entry(name, account, password, notes, category)
                     success_count += 1
                     existing_set.add((name, account, password))
                 except Exception:
