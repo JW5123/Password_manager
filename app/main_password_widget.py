@@ -136,8 +136,8 @@ class MainPasswordWidget(QWidget):
                 self.db_manager.set_current_master_password(new_password)
                 
                 # 重新加密所有欄位
-                for name, account, password, notes in all_entries:
-                    self.db_manager.update_password_entry(name, name, account, password, notes)
+                for name, account, password, notes, category in all_entries:
+                    self.db_manager.update_password_entry(name, name, account, password, notes, category)
                 
                 QMessageBox.information(self, "訊息", "登入密碼已重設")
             else:
