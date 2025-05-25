@@ -8,13 +8,10 @@ def resource_path(relative_path: str) -> str:
     return os.path.join(os.path.abspath("."), relative_path)
 
 def get_user_settings_path():
-    if os.name == 'nt':  # Windows
-        home = os.path.expanduser("~")
-        app_dir = os.path.join(home, ".password_manager")
-        os.makedirs(app_dir, exist_ok=True)
-        return app_dir
-    else:  # Linux/macOS
-        return os.path.join(os.path.expanduser("~/.password_manager"), "settings.json")
+    home = os.path.expanduser("~")
+    app_dir = os.path.join(home, ".password_manager")
+    os.makedirs(app_dir, exist_ok=True)
+    return app_dir
     
 def get_database_path():
     return os.path.join(get_user_settings_path(), "passwords.db")
