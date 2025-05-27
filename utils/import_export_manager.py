@@ -32,9 +32,12 @@ class ImportExportManager:
                                     f"請確保檔案包含以下欄位：{', '.join(required_columns)}")
                 return
 
-            # 如果沒有備註欄位，添加空的備註欄位
+            # 如果沒有備註或類別欄位，添加空的欄位
             if '備註' not in df.columns:
                 df['備註'] = ''
+
+            if '類別' not in df.columns:
+                df['類別'] = ''
 
             # 獲取現有資料以避免重複
             existing_entries = self.db_manager.get_all_entries()
@@ -77,8 +80,8 @@ class ImportExportManager:
         except Exception as e:
             QMessageBox.critical(self.parent, "匯入錯誤", f"檔案匯入過程中發生錯誤：\n{str(e)}")
 
+    # 顯示匯入結果
     def _show_import_result(self, success_count, duplicate_count, fail_count):
-        """顯示匯入結果"""
         message = f"匯入結果：\n成功添加：{success_count} 項\n"
         if duplicate_count > 0:
             message += f"已跳過（重複項目）：{duplicate_count} 項\n"
@@ -91,8 +94,8 @@ class ImportExportManager:
         if hasattr(self.parent, 'load_names'):
             self.parent.load_names()
 
+    # 匯出資料為Excel檔案
     def export_to_csv(self):
-        """匯出資料為CSV或Excel檔案"""
         file_path, _ = QFileDialog.getSaveFileName(
             self.parent, "儲存檔案", "密碼儲存簿", 
             "Excel Files CSV Files (*.csv);;(*.xlsx);;All Files (*)"
