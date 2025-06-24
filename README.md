@@ -4,6 +4,13 @@
 <h1 align="center">Password Manager</h1>
 
 <p align="center">
+    <img src="https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue">
+    <img src="https://img.shields.io/badge/Qt-41CD52?style=for-the-badge&logo=qt&logoColor=white">
+    <img src="https://img.shields.io/badge/Sqlite-003B57?style=for-the-badge&logo=sqlite&logoColor=white">
+    <img src="https://img.shields.io/badge/json-5E5C5C?style=for-the-badge&logo=json&logoColor=white">
+</p>
+
+<p align="center">
 This software can store account passwords for all kinds of websites or applications.
 You can add, delete, edit data and use search box to quickly find the account you need.
 You can use a password generator to set your password.
