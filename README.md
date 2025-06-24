@@ -32,7 +32,7 @@ You can use a password generator to set your password.
 ![5](assets/video/密碼管理APP-匯入匯出.gif)
 
 ### Database
-* Store in the local personal path "C:\Users\\{name}\\.password_manger"
+* Store in the local personal path "C:\Users\\{name}\\.password_manager"
 
 ## Expected to develop
 - [ ] Language selection (e.g., English).
