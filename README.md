@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="assets/image/password-manager.png" alt="PasswordManager" width="100" height="100">
+    <img src="assets/image/PasswordManager.png" alt="PasswordManager" width="100" height="100">
 </p>
 <h1 align="center">Password Manager</h1>
 
