@@ -1,51 +1,31 @@
-# Password manager
+<p align="center">
+    <img src="password-manager.png" alt="PasswordManager" width="100" height="100">
+</p>
+<h1 align="center">Password Manager</h1>
 
+<p align="center">
 This software can store account passwords for all kinds of websites or applications.
 You can add, delete, edit data and use search box to quickly find the account you need.
+You can use a password generator to set your password.
+</p>
 
 ## Software Introduction
 
-### Initial page
-![1](Images/1.png)
-
-### Setup password
-![2](Images/2.png)
+### Password setup & reset 
+![1](assets/video/密碼管理APP-登入密碼.gif)
 * After installing the program, you are required to set up a login password
 
-### Login interface
-![3](Images/3.png)
+### CRUD Operation & Password generate
+![3](assets/video/密碼管理APP-新增刪除編輯.gif)
 
-### Reset password
-![4](Images/4.png)
-* Current password is required to reset.
+### Theme & Category setup
+![4](assets/video/密碼管理APP-設定功能.gif)
 
-### Main interface
-![5](Images/5.png)
-
-### Add data
-![6](Images/6.png)
-* Name is required, otherwise you can't add it.
-* The editing page is the same as the adding page
-
-### List Sorting
-| after | before |
-| :------: | :------: |
-| ![7](Images/7.png) | ![8](Images/8.png) |
-
-You can manually drag and drop to sort.
-
-### View Content
-![11](Images/11.png)
-
-### Search
-![10](Images/10.png)
-* When you enter a keyword, related information will be displayed.
-
-### Export to CSV file
-![9](Images/9.png)
+### Import & Export
+![5](assets/video/密碼管理APP-匯入匯出.gif)
 
 ### Database
-* The database file will be in your root directory, named "passwords.db".
+* Store in the local personal path "C:\Users\\{name}\\.password_manger"
 
 ## Expected to develop
 - [ ] Language selection (e.g., English).
@@ -54,3 +34,4 @@ You can manually drag and drop to sort.
 ## Changelog
 
 * v1.0.0 created on 2024/10/20
+* v2.0.0 Update on 2025/5/26
