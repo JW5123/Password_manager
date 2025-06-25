@@ -18,14 +18,14 @@ You can use a password generator to set your password.
 
 ## Software Introduction
 
-### Password setup & reset 
+### Password Setup & Reset
 ![1](assets/video/密碼管理APP-登入密碼.gif)
 * After installing the program, you are required to set up a login password
 
 ### CRUD Operation & Password generate
 ![3](assets/video/密碼管理APP-新增刪除編輯.gif)
 
-### Theme & Category setup
+### Theme & Category Configuration
 ![4](assets/video/密碼管理APP-設定功能.gif)
 
 ### Import & Export
