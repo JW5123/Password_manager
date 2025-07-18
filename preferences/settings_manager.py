@@ -41,21 +41,6 @@ class SettingsManager:
             
             # Linux - GNOME/KDE 
             elif sys.platform.startswith("linux"):
-                try:
-                    from PyQt6.QtWidgets import QApplication
-                    from PyQt6.QtGui import QPalette
-                    
-                    app = QApplication.instance()
-                    if app is not None:
-                        palette = app.palette()
-                        # 檢查窗口背景色的亮度
-                        bg_color = palette.color(QPalette.ColorRole.Window)
-                        # 計算亮度 (0-255)
-                        brightness = (bg_color.red() + bg_color.green() + bg_color.blue()) / 3
-                        return "Dark Blue" if brightness < 128 else "Light Blue"
-                except:
-                    pass
-                
                 # 備用方案：檢測環境變數和配置
                 import subprocess
                 
