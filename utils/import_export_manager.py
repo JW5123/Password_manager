@@ -2,9 +2,10 @@ import pandas as pd
 from PyQt6.QtWidgets import QFileDialog, QMessageBox
 
 class ImportExportManager:
-    def __init__(self, parent, db_manager):
+    def __init__(self, parent, db_manager, settings_manager):
         self.parent = parent
         self.db_manager = db_manager
+        self.settings_manager = settings_manager
         
     def import_from_file(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -38,6 +39,28 @@ class ImportExportManager:
 
             if '類別' not in df.columns:
                 df['類別'] = ''
+            
+            # 自動新增分類
+            if '類別' in df.columns:
+                # 取得現有分類
+                existing_categories = self.settings_manager.get_categories()
+                
+                # 取得匯入檔案中的分類，並過濾空值
+                new_categories = df['類別'].dropna().unique()
+                
+                # 找出需要新增的分類
+                categories_to_add = [
+                    cat for cat in new_categories 
+                    if cat not in existing_categories and cat and cat != "全部"
+                ]
+                
+                # 如果有新分類，則更新設定
+                if categories_to_add:
+                    updated_categories = existing_categories + categories_to_add
+                    self.settings_manager.set_categories(updated_categories)
+                    print(f"已自動新增分類：{', '.join(categories_to_add)}")
+                    if hasattr(self.parent, 'reload_categories'):
+                        self.parent.reload_categories()
 
             # 獲取現有資料以避免重複
             existing_entries = self.db_manager.get_all_entries()

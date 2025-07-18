@@ -106,6 +106,7 @@ class MainPasswordWidget(QWidget):
             self.db_manager.set_current_master_password(entered_password)
             QMessageBox.information(self, "訊息", "登入成功")
             self.parent.setCentralWidget(NameListWidget(self.parent))
+            self.parent.name_list_widget = self.parent.centralWidget()
         else:
             QMessageBox.warning(self, "訊息", "密碼錯誤")
 
