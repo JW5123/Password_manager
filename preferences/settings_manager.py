@@ -41,10 +41,9 @@ class SettingsManager:
             
             # Linux - GNOME/KDE 
             elif sys.platform.startswith("linux"):
-                # 備用方案：檢測環境變數和配置
                 import subprocess
-                
-                # KDE 簡單檢測
+
+                # KDE
                 try:
                     result = subprocess.run(['kreadconfig5', '--group', 'General', '--key', 'ColorScheme'], 
                                         capture_output=True, text=True, timeout=3)
@@ -54,7 +53,7 @@ class SettingsManager:
                 except:
                     pass
                 
-                # GNOME 檢測
+                # GNOME
                 try:
                     result = subprocess.run(['gsettings', 'get', 'org.gnome.desktop.interface', 'gtk-theme'], 
                                         capture_output=True, text=True, timeout=3)
@@ -82,7 +81,7 @@ class SettingsManager:
                     settings = json.load(f)
                     # 確保設定包含必要的鍵值
                     if 'theme' not in settings:
-                        settings['theme'] = "System"  # 預設改為跟隨系統
+                        settings['theme'] = "System"
                     if 'categories' not in settings:
                         settings['categories'] = []
                     return settings
@@ -90,7 +89,7 @@ class SettingsManager:
                 print(f"載入設定錯誤 {e}")
         
         # 若不存在則建立預設設定
-        default = {"theme": "System", "categories": []}  # 預設改為跟隨系統
+        default = {"theme": "System", "categories": []}
         self.save_settings(default)
         return default
 
