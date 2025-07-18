@@ -1,10 +1,12 @@
 import json
 import os
+import sys
 from qt_material import apply_stylesheet
 from utils.path_helper import get_settings_path
 
 class SettingsManager:
     THEMES = {
+        "System": None,
         "Dark Blue": 'dark_blue.xml',
         "Light Blue": 'light_blue.xml'
     }
@@ -13,16 +15,86 @@ class SettingsManager:
         self.settings_path = get_settings_path()
         self.settings = self.load_settings()
 
+    def detect_system_theme(self):
+        try:
+            # Windows 10/11
+            if sys.platform == "win32":
+                import winreg
+                try:
+                    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 
+                                    r"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize")
+                    value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
+                    winreg.CloseKey(key)
+                    return "Light Blue" if value == 1 else "Dark Blue"
+                except:
+                    pass
+            
+            # macOS
+            elif sys.platform == "darwin":
+                import subprocess
+                try:
+                    result = subprocess.run(['defaults', 'read', '-g', 'AppleInterfaceStyle'], 
+                                        capture_output=True, text=True)
+                    return "Dark Blue" if result.returncode == 0 and "Dark" in result.stdout else "Light Blue"
+                except:
+                    pass
+            
+            # Linux - GNOME/KDE 
+            elif sys.platform.startswith("linux"):
+                import subprocess
+                try:
+                    # GNOME
+                    result = subprocess.run(['gsettings', 'get', 'org.gnome.desktop.interface', 'gtk-theme'], 
+                                        capture_output=True, text=True)
+                    if result.returncode == 0:
+                        theme = result.stdout.strip().lower()
+                        if 'dark' in theme:
+                            return "Dark Blue"
+                        else:
+                            return "Light Blue"
+                except:
+                    pass
+                
+                try:
+                    # KDE
+                    result = subprocess.run(['kreadconfig5', '--group', 'Colors:Window', '--key', 'BackgroundNormal'], 
+                                        capture_output=True, text=True)
+                    if result.returncode == 0:
+                        # 如果背景顏色較暗，則為深色主題
+                        color = result.stdout.strip()
+                        if color and len(color) >= 7:
+                            r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
+                            brightness = (r + g + b) / 3
+                            return "Dark Blue" if brightness < 128 else "Light Blue"
+                except:
+                    pass
+        except Exception as e:
+            print(f"檢測系統主題時發生錯誤: {e}")
+        
+        # 如果無法檢測，返回預設的淺色主題
+        return "Light Blue"
+
+    def get_effective_theme(self, theme_name):
+        if theme_name == "System":
+            return self.detect_system_theme()
+        return theme_name
+
     def load_settings(self):
         if os.path.exists(self.settings_path):
             try:
                 with open(self.settings_path, 'r', encoding='utf-8') as f:
-                    return json.load(f)
+                    settings = json.load(f)
+                    # 確保設定包含必要的鍵值
+                    if 'theme' not in settings:
+                        settings['theme'] = "System"  # 預設改為跟隨系統
+                    if 'categories' not in settings:
+                        settings['categories'] = []
+                    return settings
             except Exception as e:
                 print(f"載入設定錯誤 {e}")
         
         # 若不存在則建立預設設定
-        default = {"theme": "Light Blue", "categories": []}
+        default = {"theme": "System", "categories": []}  # 預設改為跟隨系統
         self.save_settings(default)
         return default
 
@@ -42,14 +114,17 @@ class SettingsManager:
 
     # 主題設定
     def get_theme(self):
-        return self.settings.get('theme', 'Light Blue')
+        return self.settings.get('theme', 'System')
 
     def get_theme_file(self):
-        return self.THEMES.get(self.get_theme(), 'light_blue.xml')
+        theme_name = self.get_theme()
+        effective_theme = self.get_effective_theme(theme_name)
+        return self.THEMES.get(effective_theme, 'light_blue.xml')
 
     def apply_theme(self, widget):
         try:
-            apply_stylesheet(widget, theme=self.get_theme_file())
+            theme_file = self.get_theme_file()
+            apply_stylesheet(widget, theme=theme_file)
             return True
         except Exception as e:
             print(f"套用主題錯誤 {e}")
@@ -60,7 +135,13 @@ class SettingsManager:
             self.settings['theme'] = theme_name
             if widget:
                 try:
-                    apply_stylesheet(widget, theme=self.THEMES[theme_name])
+                    if theme_name == "System":
+                        effective_theme = self.get_effective_theme(theme_name)
+                        theme_file = self.THEMES.get(effective_theme, 'light_blue.xml')
+                    else:
+                        theme_file = self.THEMES[theme_name]
+                    
+                    apply_stylesheet(widget, theme=theme_file)
                 except Exception as e:
                     print(f"套用主題錯誤 {e}")
                     return False

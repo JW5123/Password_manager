@@ -17,9 +17,9 @@ class SettingsWidget(QWidget):
         # 取得設定
         self.settings = self.settings_manager.load_settings()
 
-        self.temp_theme = self.settings.get('theme', 'Light Blue')
+        self.temp_theme = self.settings.get('theme', 'System')
 
-        self.temp_categories = self.settings.get('categories', [])
+        self.temp_categories = self.settings.get('categories', []).copy()
         
         self.init_ui()
         
@@ -49,7 +49,7 @@ class SettingsWidget(QWidget):
             self.theme_combo.addItem(theme_name)
         
         # 設置當前主題
-        current_theme = self.settings.get('theme', 'Light Blue')
+        current_theme = self.settings.get('theme', 'System')
         index = self.theme_combo.findText(current_theme)
         if index >= 0:
             self.theme_combo.setCurrentIndex(index)
@@ -92,7 +92,7 @@ class SettingsWidget(QWidget):
         # 底部按鈕區固定
         button_layout = QHBoxLayout()
         self.save_button = QPushButton("儲存設定")
-        self.save_button.clicked.connect(self.save_settings)
+        self.save_button.clicked.connect(lambda: self.save_settings(show_message=True))
         self.cancel_button = QPushButton("返回")
         self.cancel_button.clicked.connect(self.go_back)
         button_layout.addWidget(self.save_button)
@@ -160,22 +160,64 @@ class SettingsWidget(QWidget):
         action = menu.exec(self.category_list_widget.mapToGlobal(pos))
         if action == delete_action:
             category_name = item.text()
-            self.temp_categories.remove(category_name)
-            self.category_list_widget.takeItem(self.category_list_widget.row(item))
+            # 從臨時列表中移除
+            if category_name in self.temp_categories:
+                self.temp_categories.remove(category_name)
+            # 從列表widget中移除
+            row = self.category_list_widget.row(item)
+            self.category_list_widget.takeItem(row)
+
+    def has_unsaved_changes(self):
+        current_theme = self.settings.get('theme', 'System')
+        current_categories = self.settings.get('categories', [])
+        
+        # 檢查主題是否有變更
+        if self.temp_theme != current_theme:
+            return True
+        
+        # 檢查分類是否有變更（比較長度和內容）
+        if len(self.temp_categories) != len(current_categories):
+            return True
+        
+        # 檢查分類內容是否相同（保持順序）
+        if self.temp_categories != current_categories:
+            return True
+        
+        return False
     
     # 儲存設定
-    def save_settings(self):
+    def save_settings(self, show_message=True):
         self.settings['theme'] = self.temp_theme
         self.settings['categories'] = self.temp_categories
 
         if self.settings_manager.save_settings(self.settings):
             self.settings_manager.settings = self.settings_manager.load_settings()
             self.settings_manager.set_theme(self.temp_theme, self.parent)
-            QMessageBox.information(self, "訊息", "設定已儲存")
+            if show_message:
+                QMessageBox.information(self, "訊息", "設定已儲存")
+            return True
         else:
-            QMessageBox.warning(self, "錯誤", "無法儲存設定")
+            if show_message:
+                QMessageBox.warning(self, "錯誤", "無法儲存設定")
+            return False
 
     # 返回主畫面
     def go_back(self):
+        if self.has_unsaved_changes():
+            reply = QMessageBox(self)
+            reply.setWindowTitle("未儲存的變更")
+            reply.setText('您有未儲存的變更。要儲存嗎？')
+            reply.setIcon(QMessageBox.Icon.Question)  
+                            
+            yes_button = reply.addButton("是", QMessageBox.ButtonRole.YesRole)                                         
+            no_button = reply.addButton("否",  QMessageBox.ButtonRole.NoRole)
+
+            reply.exec()                                                  
+
+            if reply.clickedButton() == yes_button:                                
+                if not self.save_settings(show_message=False):              
+                    return
+        
+        # 返回帳號列表頁面
         from app.account_list_widget import NameListWidget
         self.parent.setCentralWidget(NameListWidget(self.parent))
