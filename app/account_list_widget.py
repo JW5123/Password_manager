@@ -18,7 +18,7 @@ class NameListWidget(QWidget):
 
         self.db_manager = parent.db_manager
         self.settings_manager = parent.settings_manager
-        self.import_export_manager = ImportExportManager(self, self.db_manager)
+        self.import_export_manager = ImportExportManager(self, self.db_manager, self.settings_manager)
         
         self.init_ui()
         self.setup_menu()
@@ -167,6 +167,18 @@ class NameListWidget(QWidget):
 
     def load_names(self):
         self.load_names_by_category(self.category_combo.currentText())
+
+    def reload_categories(self):
+        current_text = self.category_combo.currentText()
+        self.category_combo.clear()
+        self.category_combo.addItem("全部")
+        categories = self.settings_manager.get_categories()
+        for category in categories:
+            self.category_combo.addItem(category)
+        
+        index = self.category_combo.findText(current_text)
+        if index != -1:
+            self.category_combo.setCurrentIndex(index)
 
     def load_names_by_category(self, category):
         self.name_list.clear()
