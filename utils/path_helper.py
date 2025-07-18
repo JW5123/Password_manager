@@ -1,5 +1,8 @@
 import sys
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def resource_path(relative_path: str) -> str:
     # 回傳正確的資源路徑，支援打包後 (_MEIPASS) 或原始碼執行
@@ -14,7 +17,13 @@ def get_user_settings_path():
     return app_dir
     
 def get_database_path():
+    custom_path = os.getenv("PASSWORD_MANAGER_DB")
+    if custom_path:
+        return os.path.abspath(custom_path)
     return os.path.join(get_user_settings_path(), "passwords.db")
 
 def get_settings_path():
+    custom_settings = os.getenv("PASSWORD_MANAGER_SETTINGS")
+    if custom_settings:
+        return os.path.abspath(custom_settings)
     return os.path.join(get_user_settings_path(), "settings.json")
