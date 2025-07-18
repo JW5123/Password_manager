@@ -50,7 +50,7 @@ class EditPasswordDialog(QDialog):
 
         layout.addRow("分類:", self.category_combo)
 
-        self.notes_input = QPlainTextEdit()
+        self.notes_input = QPlainTextEdit(self.new_notes)
         self.notes_input.setFrameShape(QFrame.Shape.StyledPanel)
         self.notes_input.setFrameShadow(QFrame.Shadow.Sunken)
         layout.addRow("備註:", self.notes_input)
