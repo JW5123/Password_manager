@@ -6,10 +6,7 @@ from utils.path_helper import get_settings_path
 class SettingsManager:
     THEMES = {
         "Dark Blue": 'dark_blue.xml',
-        "Dark Cyan": 'dark_cyan.xml',
-        "Dark Teal": 'dark_teal.xml',
-        "Light Blue": 'light_blue.xml',
-        "Light Cyan": 'light_cyan_500.xml'
+        "Light Blue": 'light_blue.xml'
     }
 
     def __init__(self):
