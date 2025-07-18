@@ -42,8 +42,14 @@ class SettingsManager:
             # Linux - GNOME/KDE 
             elif sys.platform.startswith("linux"):
                 import subprocess
+                
+                # 首先嘗試檢測 KDE
+                kde_theme = self._detect_kde_theme()
+                if kde_theme:
+                    return kde_theme
+                
+                # 如果 KDE 檢測失敗，嘗試 GNOME
                 try:
-                    # GNOME
                     result = subprocess.run(['gsettings', 'get', 'org.gnome.desktop.interface', 'gtk-theme'], 
                                         capture_output=True, text=True)
                     if result.returncode == 0:
@@ -54,25 +60,65 @@ class SettingsManager:
                             return "Light Blue"
                 except:
                     pass
-                
-                try:
-                    # KDE
-                    result = subprocess.run(['kreadconfig5', '--group', 'Colors:Window', '--key', 'BackgroundNormal'], 
-                                        capture_output=True, text=True)
-                    if result.returncode == 0:
-                        # 如果背景顏色較暗，則為深色主題
-                        color = result.stdout.strip()
-                        if color and len(color) >= 7:
-                            r, g, b = int(color[1:3], 16), int(color[3:5], 16), int(color[5:7], 16)
-                            brightness = (r + g + b) / 3
-                            return "Dark Blue" if brightness < 128 else "Light Blue"
-                except:
-                    pass
+
         except Exception as e:
             print(f"檢測系統主題時發生錯誤: {e}")
         
         # 如果無法檢測，返回預設的淺色主題
         return "Light Blue"
+    
+    def _detect_kde_theme(self):
+        """檢測 KDE 主題"""
+        import subprocess
+        
+        # 嘗試多種 KDE 主題檢測方法
+        methods = [
+            # 方法1: 檢測 KDE 配色方案
+            ['kreadconfig5', '--group', 'General', '--key', 'ColorScheme'],
+            ['kreadconfig6', '--group', 'General', '--key', 'ColorScheme'],
+            
+            # 方法2: 檢測 Plasma 主題
+            ['kreadconfig5', '--group', 'Theme', '--key', 'name'],
+            ['kreadconfig6', '--group', 'Theme', '--key', 'name'],
+            
+            # 方法3: 檢測 Breeze 主題變體
+            ['kreadconfig5', '--group', 'KDE', '--key', 'LookAndFeelPackage'],
+            ['kreadconfig6', '--group', 'KDE', '--key', 'LookAndFeelPackage'],
+        ]
+        
+        for method in methods:
+            try:
+                result = subprocess.run(method, capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    output = result.stdout.strip().lower()
+                    print(f"KDE 檢測方法 {' '.join(method)}: {output}")
+                    
+                    # 檢測深色主題關鍵字
+                    dark_keywords = ['dark', 'breeze-dark', 'breezedark', 'plasma-dark', 'plasmadark']
+                    if any(keyword in output for keyword in dark_keywords):
+                        return "Dark Blue"
+                    
+                    # 檢測淺色主題關鍵字
+                    light_keywords = ['light', 'breeze', 'plasma', 'default']
+                    if any(keyword in output for keyword in light_keywords):
+                        return "Light Blue"
+                        
+            except Exception as e:
+                print(f"KDE 檢測方法 {' '.join(method)} 失敗: {e}")
+                continue
+        
+        # 如果以上方法都失敗，嘗試檢測環境變數
+        try:
+            kde_session = os.environ.get('KDE_SESSION_VERSION')
+            desktop_session = os.environ.get('DESKTOP_SESSION', '').lower()
+            
+            if kde_session or 'kde' in desktop_session or 'plasma' in desktop_session:
+                print("檢測到 KDE 環境，但無法確定主題，使用預設淺色主題")
+                return "Light Blue"
+        except:
+            pass
+        
+        return None
 
     def get_effective_theme(self, theme_name):
         if theme_name == "System":
