@@ -20,6 +20,10 @@ class SettingsWidget(QWidget):
         self.temp_theme = self.settings.get('theme', 'System')
 
         self.temp_categories = self.settings.get('categories', []).copy()
+
+        self.auto_logout_options = SettingsManager.AUTO_LOGOUT_OPTIONS.copy()
+
+        self.temp_auto_logout_time = self.settings.get('auto_logout_timeout', 0)
         
         self.init_ui()
         
@@ -60,6 +64,29 @@ class SettingsWidget(QWidget):
         
         appearance_group.setLayout(appearance_layout)
         main_layout.addWidget(appearance_group)
+
+        # 自動登出設定組
+        auto_logout_group = QGroupBox("自動登出設定")
+        auto_logout_layout = QVBoxLayout()
+
+        # 自動登出時間選擇
+        auto_logout_time_layout = QHBoxLayout()
+        auto_logout_time_label = QLabel("時間:")
+        auto_logout_time_layout.addWidget(auto_logout_time_label)
+
+        self.auto_logout_combo = QComboBox()
+        for display_text in self.auto_logout_options.keys():
+            self.auto_logout_combo.addItem(display_text)
+        
+        # 修正：正確設置當前自動登出時間顯示
+        self.set_current_auto_logout_display()
+
+        self.auto_logout_combo.currentTextChanged.connect(self.auto_logout_time_changed)
+        auto_logout_time_layout.addWidget(self.auto_logout_combo)
+        auto_logout_layout.addLayout(auto_logout_time_layout)
+
+        auto_logout_group.setLayout(auto_logout_layout)
+        main_layout.addWidget(auto_logout_group)
         
         category_group = QGroupBox("分類設定")
         category_outer_layout = QHBoxLayout()
@@ -104,6 +131,24 @@ class SettingsWidget(QWidget):
     # 主題選擇變更時觸發
     def theme_changed(self, theme_name):
         self.temp_theme = theme_name
+
+    def set_current_auto_logout_display(self):
+        current_display_text = "持續登入"  # 預設值
+        
+        # 找到對應當前設定值的顯示文字
+        for display_text, value in self.auto_logout_options.items():
+            if value == self.temp_auto_logout_time:
+                current_display_text = display_text
+                break
+        
+        # 設置下拉選單的當前項目
+        index = self.auto_logout_combo.findText(current_display_text)
+        if index >= 0:
+            self.auto_logout_combo.setCurrentIndex(index)
+
+    # 自動登出時間選擇變更時觸發
+    def auto_logout_time_changed(self, display_text):
+        self.temp_auto_logout_time = self.auto_logout_options.get(display_text, 0)
 
     def add_category_dialog(self):
         dialog = QDialog(self)
@@ -170,6 +215,7 @@ class SettingsWidget(QWidget):
     def has_unsaved_changes(self):
         current_theme = self.settings.get('theme', 'System')
         current_categories = self.settings.get('categories', [])
+        current_auto_logout_time = self.settings.get('auto_logout_timeout', 0)
         
         # 檢查主題是否有變更
         if self.temp_theme != current_theme:
@@ -183,12 +229,17 @@ class SettingsWidget(QWidget):
         if self.temp_categories != current_categories:
             return True
         
+        # 檢查自動登出時間是否有變更
+        if self.temp_auto_logout_time != current_auto_logout_time:
+            return True
+        
         return False
     
     # 儲存設定
     def save_settings(self, show_message=True):
         self.settings['theme'] = self.temp_theme
         self.settings['categories'] = self.temp_categories
+        self.settings['auto_logout_timeout'] = self.temp_auto_logout_time
 
         if self.settings_manager.save_settings(self.settings):
             self.settings_manager.settings = self.settings_manager.load_settings()
