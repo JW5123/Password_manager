@@ -26,18 +26,28 @@ class AutoLogoutManager(QObject):
     
     def start_monitoring(self):
         if self.is_enabled and self.logout_timeout > 0:
+            # 先停止現有的計時器，避免重複
+            self.logout_timer.stop()
             # 設定計時器，時間到就自動登出
-            self.logout_timer.start(int(self.logout_timeout * 60 * 1000))  # 轉換為毫秒
+            self.logout_timer.start(int(self.logout_timeout * 60 * 1000)) # 轉換為毫秒
     
     def stop_monitoring(self):
         self.logout_timer.stop()
     
     def reset_timer(self):
         if self.is_enabled and self.logout_timeout > 0:
-            self.logout_timer.start(int(self.logout_timeout * 60 * 1000))  # 重新計時
+            # 先停止計時器
+            self.logout_timer.stop()
+            # 重新載入最新的設定，確保使用正確的時間
+            self.load_settings()
+
+            self.logout_timer.start(int(self.logout_timeout * 60 * 1000))
     
     def auto_logout(self):
         self.logout_requested.emit()
     
     def update_settings(self):
         self.load_settings()
+        # 如果計時器正在運行，重新啟動以應用新設定
+        if self.logout_timer.isActive():
+            self.start_monitoring()
