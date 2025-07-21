@@ -1,8 +1,6 @@
 import json
 import os
 import sys
-import subprocess
-import winreg
 from qt_material import apply_stylesheet
 from utils.path_helper import get_settings_path
 
@@ -30,6 +28,7 @@ class SettingsManager:
         try:
             # Windows 10/11
             if sys.platform == "win32":
+                import winreg
                 try:
                     key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 
                                     r"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize")
@@ -42,6 +41,7 @@ class SettingsManager:
             # macOS
             elif sys.platform == "darwin":
                 try:
+                    import subprocess
                     result = subprocess.run(['defaults', 'read', '-g', 'AppleInterfaceStyle'], 
                                         capture_output=True, text=True)
                     return "Dark Blue" if result.returncode == 0 and "Dark" in result.stdout else "Light Blue"
@@ -50,9 +50,9 @@ class SettingsManager:
             
             # Linux - GNOME/KDE 
             elif sys.platform == "linux":
-
                 # KDE
                 try:
+                    import subprocess
                     result = subprocess.run(['kreadconfig5', '--group', 'General', '--key', 'ColorScheme'], 
                                         capture_output=True, text=True, timeout=3)
                     if result.returncode == 0:
