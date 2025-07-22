@@ -1,86 +1,31 @@
 import json
 import os
-import sys
-import subprocess
-import winreg
 from qt_material import apply_stylesheet
 from utils.path_helper import get_settings_path
+from system.system_theme_detector import detect_system_theme
+from .constants import THEMES, AUTO_LOGOUT_OPTIONS, CLOSE_ACTION_OPTIONS
 
 class SettingsManager:
-    THEMES = {
-        "System": None,
-        "Dark Blue": 'dark_blue.xml',
-        "Light Blue": 'light_blue.xml'
-    }
-
-    # 自動登出時間設定
-    AUTO_LOGOUT_OPTIONS = {
-        "持續登入": 0,
-        "5分": 5,
-        "10分": 10,
-        "20分": 20,
-        "30分": 30
-    }
-
+    
     def __init__(self):
         self.settings_path = get_settings_path()
         self.settings = self.load_settings()
+        self.THEMES = THEMES
+        self.AUTO_LOGOUT_OPTIONS = AUTO_LOGOUT_OPTIONS
+        self.CLOSE_ACTION_OPTIONS = CLOSE_ACTION_OPTIONS
 
-    def detect_system_theme(self):
-        try:
-            # Windows 10/11
-            if sys.platform == "win32":
-                try:
-                    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 
-                                    r"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize")
-                    value, _ = winreg.QueryValueEx(key, "AppsUseLightTheme")
-                    winreg.CloseKey(key)
-                    return "Light Blue" if value == 1 else "Dark Blue"
-                except:
-                    pass
-            
-            # macOS
-            elif sys.platform == "darwin":
-                try:
-                    result = subprocess.run(['defaults', 'read', '-g', 'AppleInterfaceStyle'], 
-                                        capture_output=True, text=True)
-                    return "Dark Blue" if result.returncode == 0 and "Dark" in result.stdout else "Light Blue"
-                except:
-                    pass
-            
-            # Linux - GNOME/KDE 
-            elif sys.platform == "linux":
-
-                # KDE
-                try:
-                    result = subprocess.run(['kreadconfig5', '--group', 'General', '--key', 'ColorScheme'], 
-                                        capture_output=True, text=True, timeout=3)
-                    if result.returncode == 0:
-                        theme = result.stdout.strip().lower()
-                        return "Dark Blue" if 'dark' in theme else "Light Blue"
-                except:
-                    pass
-                
-                # GNOME
-                try:
-                    result = subprocess.run(['gsettings', 'get', 'org.gnome.desktop.interface', 'gtk-theme'], 
-                                        capture_output=True, text=True, timeout=3)
-                    if result.returncode == 0:
-                        theme = result.stdout.strip().lower()
-                        return "Dark Blue" if 'dark' in theme else "Light Blue"
-                except:
-                    pass
-
-        except Exception as e:
-            print(f"檢測系統主題時發生錯誤: {e}")
-        
-        # 如果無法檢測，返回預設的淺色主題
-        return "Light Blue"
 
     def get_effective_theme(self, theme_name):
         if theme_name == "System":
-            return self.detect_system_theme()
+            return detect_system_theme()
         return theme_name
+
+    def is_dark_theme(self, theme_name=None):
+        if theme_name is None:
+            theme_name = self.get_theme()
+        
+        effective_theme = self.get_effective_theme(theme_name)
+        return effective_theme == "Dark Blue"
 
     def load_settings(self):
         if os.path.exists(self.settings_path):
@@ -93,13 +38,20 @@ class SettingsManager:
                     if 'categories' not in settings:
                         settings['categories'] = []
                     if 'auto_logout_timeout' not in settings:
-                        settings['auto_logout_timeout'] = 0 # 0 means disabled
+                        settings['auto_logout_timeout'] = 0
+                    if 'close_action' not in settings:
+                        settings['close_action'] = "tray"
                     return settings
             except Exception as e:
                 print(f"載入設定錯誤 {e}")
         
         # 若不存在則建立預設設定
-        default = {"theme": "System", "categories": [], "auto_logout_timeout": 0}
+        default = {
+            "theme": "System", 
+            "categories": [], 
+            "auto_logout_timeout": 0,
+            "close_action": "tray"
+        }
         self.save_settings(default)
         return default
 
@@ -113,6 +65,19 @@ class SettingsManager:
     def set_auto_logout_timeout(self, timeout):
         self.settings['auto_logout_timeout'] = timeout
         return self.save_settings()
+
+    def get_close_action(self):
+        action = self.settings.get('close_action', 'tray')
+            
+        self.set_close_action(action)
+
+        return action
+
+    def set_close_action(self, action):
+        if action in ["tray", "quit"]:
+            self.settings['close_action'] = action
+            return self.save_settings()
+        return False
 
     def save_settings(self, settings=None):
         if settings is not None:
@@ -170,4 +135,12 @@ class SettingsManager:
 
     def set_categories(self, category_list):
         self.settings['categories'] = category_list
+        return self.save_settings()
+
+    # 通用設定方法 (為了兼容 close_dialog_manager)
+    def get_setting(self, key, default_value=None):
+        return self.settings.get(key, default_value)
+
+    def set_setting(self, key, value):
+        self.settings[key] = value
         return self.save_settings()

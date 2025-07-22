@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
 from preferences.settings_manager import SettingsManager
-
+from preferences.constants import AUTO_LOGOUT_OPTIONS, CLOSE_ACTION_OPTIONS, THEMES
 class SettingsWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
@@ -21,9 +21,13 @@ class SettingsWidget(QWidget):
 
         self.temp_categories = self.settings.get('categories', []).copy()
 
-        self.auto_logout_options = SettingsManager.AUTO_LOGOUT_OPTIONS.copy()
-
         self.temp_auto_logout_time = self.settings.get('auto_logout_timeout', 0)
+
+        self.auto_logout_options = AUTO_LOGOUT_OPTIONS.copy()
+
+        self.close_action_options = CLOSE_ACTION_OPTIONS.copy()
+
+        self.temp_close_action = self.settings.get('close_action', 'tray')
         
         self.init_ui()
         
@@ -49,7 +53,7 @@ class SettingsWidget(QWidget):
         theme_layout.addWidget(theme_label)
         
         self.theme_combo = QComboBox()
-        for theme_name in SettingsManager.THEMES.keys():
+        for theme_name in THEMES.keys():
             self.theme_combo.addItem(theme_name)
         
         # 設置當前主題
@@ -65,13 +69,13 @@ class SettingsWidget(QWidget):
         appearance_group.setLayout(appearance_layout)
         main_layout.addWidget(appearance_group)
 
-        # 自動登出設定組
-        auto_logout_group = QGroupBox("自動登出設定")
-        auto_logout_layout = QVBoxLayout()
+        # 行為設定組
+        behavior_group = QGroupBox("行為設定")
+        behavior_layout = QVBoxLayout()
 
         # 自動登出時間選擇
         auto_logout_time_layout = QHBoxLayout()
-        auto_logout_time_label = QLabel("時間:")
+        auto_logout_time_label = QLabel("自動登出時間:")
         auto_logout_time_layout.addWidget(auto_logout_time_label)
 
         self.auto_logout_combo = QComboBox()
@@ -83,10 +87,26 @@ class SettingsWidget(QWidget):
 
         self.auto_logout_combo.currentTextChanged.connect(self.auto_logout_time_changed)
         auto_logout_time_layout.addWidget(self.auto_logout_combo)
-        auto_logout_layout.addLayout(auto_logout_time_layout)
+        behavior_layout.addLayout(auto_logout_time_layout)
 
-        auto_logout_group.setLayout(auto_logout_layout)
-        main_layout.addWidget(auto_logout_group)
+        # 關閉動作選擇
+        close_action_layout = QHBoxLayout()
+        close_action_label = QLabel("關閉動作:")
+        close_action_layout.addWidget(close_action_label)
+
+        self.close_action_combo = QComboBox()
+        for display_text in self.close_action_options.keys():
+            self.close_action_combo.addItem(display_text)
+        
+        # 設置當前關閉動作顯示
+        self.set_current_close_action_display()
+
+        self.close_action_combo.currentTextChanged.connect(self.close_action_changed)
+        close_action_layout.addWidget(self.close_action_combo)
+        behavior_layout.addLayout(close_action_layout)
+
+        behavior_group.setLayout(behavior_layout)
+        main_layout.addWidget(behavior_group)
         
         category_group = QGroupBox("分類設定")
         category_outer_layout = QHBoxLayout()
@@ -149,6 +169,29 @@ class SettingsWidget(QWidget):
     # 自動登出時間選擇變更時觸發
     def auto_logout_time_changed(self, display_text):
         self.temp_auto_logout_time = self.auto_logout_options.get(display_text, 0)
+
+    def set_current_close_action_display(self):
+        current_display_text = "最小化到托盤"  # 預設值
+        
+        # 找到對應當前設定值的顯示文字
+        for display_text, value in self.close_action_options.items():
+            if value == self.temp_close_action:
+                current_display_text = display_text
+                break
+        
+        # 如果找不到對應的顯示文字（比如舊的 "ask" 值），使用預設值
+        if current_display_text not in self.close_action_options:
+            current_display_text = "最小化到托盤"
+            self.temp_close_action = "tray"
+        
+        # 設置下拉選單的當前項目
+        index = self.close_action_combo.findText(current_display_text)
+        if index >= 0:
+            self.close_action_combo.setCurrentIndex(index)
+
+    # 關閉動作選擇變更時觸發
+    def close_action_changed(self, display_text):
+        self.temp_close_action = self.close_action_options.get(display_text, 'tray')
 
     def add_category_dialog(self):
         dialog = QDialog(self)
@@ -216,6 +259,7 @@ class SettingsWidget(QWidget):
         current_theme = self.settings.get('theme', 'System')
         current_categories = self.settings.get('categories', [])
         current_auto_logout_time = self.settings.get('auto_logout_timeout', 0)
+        current_close_action = self.settings.get('close_action', 'tray')
         
         # 檢查主題是否有變更
         if self.temp_theme != current_theme:
@@ -233,6 +277,10 @@ class SettingsWidget(QWidget):
         if self.temp_auto_logout_time != current_auto_logout_time:
             return True
         
+        # 檢查關閉動作是否有變更
+        if self.temp_close_action != current_close_action:
+            return True
+        
         return False
     
     # 儲存設定
@@ -240,10 +288,16 @@ class SettingsWidget(QWidget):
         self.settings['theme'] = self.temp_theme
         self.settings['categories'] = self.temp_categories
         self.settings['auto_logout_timeout'] = self.temp_auto_logout_time
+        self.settings['close_action'] = self.temp_close_action
 
         if self.settings_manager.save_settings(self.settings):
             self.settings_manager.settings = self.settings_manager.load_settings()
             self.settings_manager.set_theme(self.temp_theme, self.parent)
+            
+            # 更新托盤主題
+            if hasattr(self.parent, 'tray_manager'):
+                self.parent.tray_manager.update_tray_theme()
+            
             if show_message:
                 QMessageBox.information(self, "訊息", "設定已儲存")
             return True
