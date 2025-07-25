@@ -1,13 +1,15 @@
 from PyQt6.QtWidgets import (QDialog, QFormLayout, QPushButton,
                             QLabel, QLineEdit, QHBoxLayout, QApplication, QPlainTextEdit)
 
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import QCursor
 
 from .password_operations import edit_password_entry, delete_password_entry
 
 # 查看密碼項目對話框
 class ViewPasswordDialog(QDialog):
+    password_updated = pyqtSignal()
+    
     def __init__(self, parent, name, account, password, notes, category=None):
         super().__init__(parent)
         self.setWindowTitle(f"{name}")
@@ -80,8 +82,7 @@ class ViewPasswordDialog(QDialog):
         
         self.copy_label.setText(f"已複製「{text}」到剪貼簿")
         self.copy_label.setVisible(True)
-        
-        # 3秒後隱藏提示
+
         QTimer.singleShot(3000, lambda: self.copy_label.setVisible(False))
 
     def edit_password(self):
@@ -100,7 +101,7 @@ class ViewPasswordDialog(QDialog):
 
             # 更新分類欄位
             self.category = category
-            category_display = self.category if self.category else "未分類"
+            category_display = self.category
             self.category_input.setText(category_display)
 
             self.account = account
@@ -108,8 +109,8 @@ class ViewPasswordDialog(QDialog):
             self.notes = notes
             self.data_changed = True
 
-            # 立即更新父視窗的列表
-            self.parent_widget.load_names()
+            # 當密碼資料有更新時
+            self.password_updated.emit()
 
     def delete_password(self):
         if delete_password_entry(self, self.parent_widget.db_manager, self.name):
@@ -119,5 +120,5 @@ class ViewPasswordDialog(QDialog):
     # 關閉視窗時觸發
     def closeEvent(self, event):
         if self.data_changed:
-            self.parent_widget.load_names()
+            self.password_updated.emit()
         super().closeEvent(event)

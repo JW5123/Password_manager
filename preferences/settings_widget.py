@@ -1,11 +1,10 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, 
-                            QLabel, QComboBox, QGroupBox, QMessageBox, QListWidget,
-                            QListWidgetItem, QScrollArea, QDialog, QLineEdit, QFormLayout, 
-                            QDialogButtonBox, QMenu)
+                            QLabel, QScrollArea, QMessageBox, QTabWidget)
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QFont
-from preferences.settings_manager import SettingsManager
-from preferences.constants import AUTO_LOGOUT_OPTIONS, CLOSE_ACTION_OPTIONS, THEMES
+
+from modules.settings import SystemDialog, CategoryDialog
+
 class SettingsWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
@@ -14,296 +13,88 @@ class SettingsWidget(QWidget):
         # 使用設定管理器
         self.settings_manager = parent.settings_manager
         
-        # 取得設定
-        self.settings = self.settings_manager.load_settings()
-
-        self.temp_theme = self.settings.get('theme', 'System')
-
-        self.temp_categories = self.settings.get('categories', []).copy()
-
-        self.temp_auto_logout_time = self.settings.get('auto_logout_timeout', 0)
-
-        self.auto_logout_options = AUTO_LOGOUT_OPTIONS.copy()
-
-        self.close_action_options = CLOSE_ACTION_OPTIONS.copy()
-
-        self.temp_close_action = self.settings.get('close_action', 'tray')
+        # 初始化各個設定對話框
+        self.category_dialog = CategoryDialog(self.settings_manager, self)
+        self.system_dialog = SystemDialog(self.settings_manager, self)
         
         self.init_ui()
         
     def init_ui(self):
-        # 建立主佈局
         main_layout = QVBoxLayout()
-        main_layout.setSpacing(20)
         main_layout.setContentsMargins(30, 30, 30, 30)
         
-        # 建立標題
         title_label = QLabel("設定")
         title_label.setFont(QFont("Arial", 16, QFont.Weight.Bold))
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(title_label)
         
-        # 外觀設定組
-        appearance_group = QGroupBox("外觀設定")
-        appearance_layout = QVBoxLayout()
+        self.tab_widget = QTabWidget()
         
-        # 主題選擇
-        theme_layout = QHBoxLayout()
-        theme_label = QLabel("主題:")
-        theme_layout.addWidget(theme_label)
+        # 使用輔助方法建立可滾動的分頁
+        self._add_scrollable_tab(self.category_dialog, "分類設定")
+        self._add_scrollable_tab(self.system_dialog, "系統設定")
         
-        self.theme_combo = QComboBox()
-        for theme_name in THEMES.keys():
-            self.theme_combo.addItem(theme_name)
-        
-        # 設置當前主題
-        current_theme = self.settings.get('theme', 'System')
-        index = self.theme_combo.findText(current_theme)
-        if index >= 0:
-            self.theme_combo.setCurrentIndex(index)
-        
-        self.theme_combo.currentTextChanged.connect(self.theme_changed)
-        theme_layout.addWidget(self.theme_combo)
-        appearance_layout.addLayout(theme_layout)
-        
-        appearance_group.setLayout(appearance_layout)
-        main_layout.addWidget(appearance_group)
-
-        # 行為設定組
-        behavior_group = QGroupBox("行為設定")
-        behavior_layout = QVBoxLayout()
-
-        # 自動登出時間選擇
-        auto_logout_time_layout = QHBoxLayout()
-        auto_logout_time_label = QLabel("自動登出時間:")
-        auto_logout_time_layout.addWidget(auto_logout_time_label)
-
-        self.auto_logout_combo = QComboBox()
-        for display_text in self.auto_logout_options.keys():
-            self.auto_logout_combo.addItem(display_text)
-        
-        # 修正：正確設置當前自動登出時間顯示
-        self.set_current_auto_logout_display()
-
-        self.auto_logout_combo.currentTextChanged.connect(self.auto_logout_time_changed)
-        auto_logout_time_layout.addWidget(self.auto_logout_combo)
-        behavior_layout.addLayout(auto_logout_time_layout)
-
-        # 關閉動作選擇
-        close_action_layout = QHBoxLayout()
-        close_action_label = QLabel("關閉動作:")
-        close_action_layout.addWidget(close_action_label)
-
-        self.close_action_combo = QComboBox()
-        for display_text in self.close_action_options.keys():
-            self.close_action_combo.addItem(display_text)
-        
-        # 設置當前關閉動作顯示
-        self.set_current_close_action_display()
-
-        self.close_action_combo.currentTextChanged.connect(self.close_action_changed)
-        close_action_layout.addWidget(self.close_action_combo)
-        behavior_layout.addLayout(close_action_layout)
-
-        behavior_group.setLayout(behavior_layout)
-        main_layout.addWidget(behavior_group)
-        
-        category_group = QGroupBox("分類設定")
-        category_outer_layout = QHBoxLayout()
-
-        # 新增分類按鈕
-        self.add_category_button = QPushButton("新增分類")
-        self.add_category_button.clicked.connect(self.add_category_dialog)
-        category_outer_layout.addWidget(self.add_category_button)
-
-        # 分類列表（可滾動）
-        self.category_list_widget = QListWidget()
-        self.category_list_widget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self.category_list_widget.customContextMenuRequested.connect(self.show_category_menu)
-        for cat in self.temp_categories:
-            self.category_list_widget.addItem(cat)
-        category_outer_layout.addWidget(self.category_list_widget)
-
-        category_group.setLayout(category_outer_layout)
-        main_layout.addWidget(category_group)
-
-        scroll_area = QScrollArea()
-        scroll_widget = QWidget()
-        scroll_widget.setLayout(main_layout)
-        scroll_area.setWidget(scroll_widget)
-        scroll_area.setWidgetResizable(True)
-
-        full_layout = QVBoxLayout()
-        full_layout.addWidget(scroll_area)
+        main_layout.addWidget(self.tab_widget)
 
         # 底部按鈕區固定
         button_layout = QHBoxLayout()
         self.save_button = QPushButton("儲存設定")
-        self.save_button.clicked.connect(lambda: self.save_settings(show_message=True))
         self.cancel_button = QPushButton("返回")
+
+        self.save_button.clicked.connect(lambda: self.save_settings(show_message=True))
         self.cancel_button.clicked.connect(self.go_back)
+
         button_layout.addWidget(self.save_button)
         button_layout.addWidget(self.cancel_button)
+        button_layout.setAlignment(Qt.AlignmentFlag.AlignRight)
 
-        full_layout.addLayout(button_layout)
-        self.setLayout(full_layout)
-
-    # 主題選擇變更時觸發
-    def theme_changed(self, theme_name):
-        self.temp_theme = theme_name
-
-    def set_current_auto_logout_display(self):
-        current_display_text = "持續登入"  # 預設值
-        
-        # 找到對應當前設定值的顯示文字
-        for display_text, value in self.auto_logout_options.items():
-            if value == self.temp_auto_logout_time:
-                current_display_text = display_text
-                break
-        
-        # 設置下拉選單的當前項目
-        index = self.auto_logout_combo.findText(current_display_text)
-        if index >= 0:
-            self.auto_logout_combo.setCurrentIndex(index)
-
-    # 自動登出時間選擇變更時觸發
-    def auto_logout_time_changed(self, display_text):
-        self.temp_auto_logout_time = self.auto_logout_options.get(display_text, 0)
-
-    def set_current_close_action_display(self):
-        current_display_text = "最小化到托盤"  # 預設值
-        
-        # 找到對應當前設定值的顯示文字
-        for display_text, value in self.close_action_options.items():
-            if value == self.temp_close_action:
-                current_display_text = display_text
-                break
-        
-        # 如果找不到對應的顯示文字（比如舊的 "ask" 值），使用預設值
-        if current_display_text not in self.close_action_options:
-            current_display_text = "最小化到托盤"
-            self.temp_close_action = "tray"
-        
-        # 設置下拉選單的當前項目
-        index = self.close_action_combo.findText(current_display_text)
-        if index >= 0:
-            self.close_action_combo.setCurrentIndex(index)
-
-    # 關閉動作選擇變更時觸發
-    def close_action_changed(self, display_text):
-        self.temp_close_action = self.close_action_options.get(display_text, 'tray')
-
-    def add_category_dialog(self):
-        dialog = QDialog(self)
-        dialog.setWindowTitle("新增分類")
-        dialog.setFixedSize(300, 150)  # 可調整視窗大小
-
-        layout = QVBoxLayout()
-
-        # 標籤
-        label = QLabel("分類名稱")
-        layout.addWidget(label)
-
-        # 輸入欄位
-        input_field = QLineEdit()
-        layout.addWidget(input_field)
-
-        # 按鈕區域（水平排列）
-        button_layout = QHBoxLayout()
-        add_button = QPushButton("新增")
-        cancel_button = QPushButton("取消")
-        button_layout.addWidget(add_button)
-        button_layout.addWidget(cancel_button)
-
-        layout.addLayout(button_layout)
-
-        dialog.setLayout(layout)
-
-        # 連接按鈕事件
-        add_button.clicked.connect(lambda: self.confirm_add_category(dialog, input_field.text()))
-        cancel_button.clicked.connect(dialog.reject)
-
-        dialog.exec()
-
-    def confirm_add_category(self, dialog, category_name):
-        category_name = category_name.strip()
-        if not category_name.strip():
-            QMessageBox.warning(self, "錯誤", "分類名稱不能為空白")
-            return
-
-        if not category_name or category_name in self.temp_categories:
-            QMessageBox.warning(self, "錯誤", "分類名稱無效或已存在")
-            return
-        self.temp_categories.append(category_name)
-        self.category_list_widget.addItem(category_name)
-        dialog.accept()
-
-    def show_category_menu(self, pos):
-        item = self.category_list_widget.itemAt(pos)
-        if not item:
-            return
-
-        menu = QMenu(self)
-        delete_action = menu.addAction("刪除分類")
-        action = menu.exec(self.category_list_widget.mapToGlobal(pos))
-        if action == delete_action:
-            category_name = item.text()
-            # 從臨時列表中移除
-            if category_name in self.temp_categories:
-                self.temp_categories.remove(category_name)
-            # 從列表widget中移除
-            row = self.category_list_widget.row(item)
-            self.category_list_widget.takeItem(row)
-
-    def has_unsaved_changes(self):
-        current_theme = self.settings.get('theme', 'System')
-        current_categories = self.settings.get('categories', [])
-        current_auto_logout_time = self.settings.get('auto_logout_timeout', 0)
-        current_close_action = self.settings.get('close_action', 'tray')
-        
-        # 檢查主題是否有變更
-        if self.temp_theme != current_theme:
-            return True
-        
-        # 檢查分類是否有變更（比較長度和內容）
-        if len(self.temp_categories) != len(current_categories):
-            return True
-        
-        # 檢查分類內容是否相同（保持順序）
-        if self.temp_categories != current_categories:
-            return True
-        
-        # 檢查自動登出時間是否有變更
-        if self.temp_auto_logout_time != current_auto_logout_time:
-            return True
-        
-        # 檢查關閉動作是否有變更
-        if self.temp_close_action != current_close_action:
-            return True
-        
-        return False
+        main_layout.addLayout(button_layout)
+        self.setLayout(main_layout)
     
-    # 儲存設定
-    def save_settings(self, show_message=True):
-        self.settings['theme'] = self.temp_theme
-        self.settings['categories'] = self.temp_categories
-        self.settings['auto_logout_timeout'] = self.temp_auto_logout_time
-        self.settings['close_action'] = self.temp_close_action
+    # 建立可滾動的分頁
+    def _add_scrollable_tab(self, widget, title):
+        scroll_area = QScrollArea()
+        scroll_area.setWidget(widget)
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.tab_widget.addTab(scroll_area, title)
 
-        if self.settings_manager.save_settings(self.settings):
-            self.settings_manager.settings = self.settings_manager.load_settings()
-            self.settings_manager.set_theme(self.temp_theme, self.parent)
-            
-            # 更新托盤主題
+    # 檢查是否有未儲存的變更
+    def has_unsaved_changes(self):
+        return (self.category_dialog.has_changes() or self.system_dialog.has_changes())
+    
+    # 儲存所有設定
+    def save_settings(self, show_message=True):
+        success = True
+        error_messages = []
+
+        # 儲存所有設定前，先套用所有變更
+        dialogs = [
+            (self.category_dialog, "分類設定儲存失敗"),
+            (self.system_dialog, "系統設定儲存失敗"),
+        ]
+        for dialog, error_msg in dialogs:
+            if dialog.has_changes():
+                if not dialog.apply_changes():
+                    success = False
+                    error_messages.append(error_msg)
+
+        if success:
+            # 直接從 settings_manager 取得最新主題並套用
+            if hasattr(self.parent, 'apply_theme') and callable(self.parent.apply_theme):
+                self.parent.apply_theme()
+            elif hasattr(self.settings_manager, 'apply_theme'):
+                self.settings_manager.apply_theme(self.parent)
+
             if hasattr(self.parent, 'tray_manager'):
                 self.parent.tray_manager.update_tray_theme()
-            
             if show_message:
                 QMessageBox.information(self, "訊息", "設定已儲存")
             return True
         else:
             if show_message:
-                QMessageBox.warning(self, "錯誤", "無法儲存設定")
+                QMessageBox.warning(self, "錯誤", "儲存設定時發生錯誤:\n" + "\n".join(error_messages))
             return False
 
     # 返回主畫面
@@ -322,7 +113,15 @@ class SettingsWidget(QWidget):
             if reply.clickedButton() == yes_button:                                
                 if not self.save_settings(show_message=False):              
                     return
+            elif reply.clickedButton() == no_button:
+                # 如果用戶選擇不儲存，重置所有變更
+                self.reset_all_changes()
         
         # 返回帳號列表頁面
         from app.account_list_widget import NameListWidget
         self.parent.setCentralWidget(NameListWidget(self.parent))
+    
+    # 重置所有變更
+    def reset_all_changes(self):
+        self.category_dialog.reset_changes()
+        self.system_dialog.reset_changes()

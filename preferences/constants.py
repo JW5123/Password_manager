@@ -13,6 +13,6 @@ AUTO_LOGOUT_OPTIONS = {
 }
 
 CLOSE_ACTION_OPTIONS = {
-    "最小化到托盤": "tray",
+    "背景執行": "tray",
     "直接退出": "quit"
 }

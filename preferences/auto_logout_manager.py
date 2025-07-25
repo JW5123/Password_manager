@@ -1,5 +1,4 @@
 from PyQt6.QtCore import QTimer, QObject, pyqtSignal
-import time
 
 class AutoLogoutManager(QObject):
     logout_requested = pyqtSignal()
@@ -9,12 +8,11 @@ class AutoLogoutManager(QObject):
         self.parent = parent
         self.settings_manager = parent.settings_manager if parent else None
         
-        # 簡化：只用一個計時器
         self.logout_timer = QTimer(self)
         self.logout_timer.timeout.connect(self.auto_logout)
         self.logout_timer.setSingleShot(True)  # 只觸發一次
         
-        self.logout_timeout = 0  # 自動登出時間（分鐘）
+        self.logout_timeout = 0
         self.is_enabled = False
         
         self.load_settings()
@@ -48,6 +46,5 @@ class AutoLogoutManager(QObject):
     
     def update_settings(self):
         self.load_settings()
-        # 如果計時器正在運行，重新啟動以應用新設定
         if self.logout_timer.isActive():
             self.start_monitoring()
