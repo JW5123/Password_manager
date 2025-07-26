@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QLineEdit, 
-                             QPushButton, QLabel, QHBoxLayout, QMessageBox)
+                            QPushButton, QLabel, QHBoxLayout, QMessageBox)
 
 from utils.svg_icon_set import PasswordVisibilityController
 

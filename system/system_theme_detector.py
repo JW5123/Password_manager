@@ -1,11 +1,11 @@
 import sys
 import subprocess
-import winreg
 
 def detect_system_theme():
     try:
         # Windows 10/11
         if sys.platform == "win32":
+            import winreg
             try:
                 key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
                                 r"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize")
