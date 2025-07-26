@@ -9,11 +9,9 @@ class SettingsWidget(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
-        
-        # 使用設定管理器
+
         self.settings_manager = parent.settings_manager
         
-        # 初始化各個設定對話框
         self.category_dialog = CategoryDialog(self.settings_manager, self)
         self.system_dialog = SystemDialog(self.settings_manager, self)
         
@@ -114,7 +112,7 @@ class SettingsWidget(QWidget):
                 if not self.save_settings(show_message=False):              
                     return
             elif reply.clickedButton() == no_button:
-                # 如果用戶選擇不儲存，重置所有變更
+                # 如果選擇不儲存，重置所有變更
                 self.reset_all_changes()
         
         # 返回帳號列表頁面

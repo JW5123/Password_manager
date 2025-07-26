@@ -1,3 +1,5 @@
+from PyQt6.QtWidgets import QApplication
+
 class TrayController:
     def __init__(self, window):
         self.window = window
@@ -21,4 +23,4 @@ class TrayController:
     def quit_from_tray(self):
         self.tray_manager.hide_tray_icon()
         self.window.db_manager.close()
-        self.window.close()
+        QApplication.quit()

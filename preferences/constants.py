@@ -16,3 +16,10 @@ CLOSE_ACTION_OPTIONS = {
     "背景執行": "tray",
     "直接退出": "quit"
 }
+
+DEFAULT_SETTINGS = {
+    "theme": "System", 
+    "categories": [], 
+    "auto_logout_timeout": 0,
+    "close_action": "tray"
+}

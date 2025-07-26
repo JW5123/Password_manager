@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QLineEdit, QPushButton,
 from PyQt6.QtCore import Qt, QTimer, QThreadPool, QSize
 from PyQt6.QtGui import QFont, QAction
 
-from utils.svg_icon_set import IconHelper
+from utils.svg_icon_add import IconHelper
 
 class AccountListUI(QWidget):
     
@@ -25,11 +25,11 @@ class AccountListUI(QWidget):
         # 搜尋框
         self.search_box = QLineEdit()
         self.search_box.setPlaceholderText("搜尋")
-        self.search_box.setFont(QFont("Arial", 12))
+        self.search_box.setFont(QFont("Arial", 16))
         
         # 清除按鈕
-        icon = self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxCritical)
-        self.clear_action = QAction(icon, "清除", self.search_box)
+        clear_icon = IconHelper.get_clear_icon(self.parent, QSize(20, 20))
+        self.clear_action = QAction(clear_icon, "清除", self.search_box)
         self.search_box.addAction(self.clear_action, QLineEdit.ActionPosition.TrailingPosition)
         self.clear_action.setVisible(False)
         
@@ -40,7 +40,8 @@ class AccountListUI(QWidget):
         
         # 新增按鈕
         self.add_button = QPushButton("新增資料")
-        
+        # 設定外框邊距
+        self.setContentsMargins(10, 0, 10, 10)
         # 名稱列表
         self.name_list = QListWidget()
         self.name_list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
@@ -67,26 +68,31 @@ class AccountListUI(QWidget):
         
         # 帳戶選單
         self.account_menu = menu_bar.addMenu("帳戶")
-        self.account_menu.setIcon(IconHelper.get_user_icon(self.parent, QSize(50, 50)))
+        self.account_menu.setIcon(IconHelper.get_user_icon(self.parent, QSize(60, 60)))
         
-        self.logout_action = QAction("登出", self)
+        logout_icon = IconHelper.get_logout_icon(self.parent, QSize(60, 60))
+        self.logout_action = QAction(logout_icon, "登出", self)
         self.account_menu.addAction(self.logout_action)
         
         # 檔案選單
         self.file_menu = menu_bar.addMenu("檔案")
-        self.import_action = QAction("匯入", self)
-        self.export_action = QAction("匯出", self)
+        import_icon = IconHelper.get_import_icon(self.parent, QSize(60, 60))
+        self.import_action = QAction(import_icon, "匯入", self)
         self.file_menu.addAction(self.import_action)
+        export_icon = IconHelper.get_export_icon(self.parent, QSize(60, 60))
+        self.export_action = QAction(export_icon, "匯出", self)
         self.file_menu.addAction(self.export_action)
         
         # 設定選單
         self.settings_menu = menu_bar.addMenu("設定")
-        self.settings_action = QAction("設定", self)
+        settings_icon = IconHelper.get_settings_icon(self.parent, QSize(60, 60))
+        self.settings_action = QAction(settings_icon, "設定", self)
         self.settings_menu.addAction(self.settings_action)
         
         # 說明選單
         self.help_menu = menu_bar.addMenu("說明")
-        self.about_action = QAction("關於", self)
+        about_icon = IconHelper.get_about_icon(self.parent, QSize(60, 60))
+        self.about_action = QAction(about_icon, "關於", self)
         self.help_menu.addAction(self.about_action)
     
     def create_context_menu(self, position):

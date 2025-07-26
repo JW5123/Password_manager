@@ -3,7 +3,6 @@ from PyQt6.QtCore import QSize, Qt, QTimer
 from PyQt6.QtSvg import QSvgRenderer
 from PyQt6.QtWidgets import QLineEdit, QWidget
 from utils.path_helper import resource_path
-from typing import Optional
 
 class SvgIconManager:
     @staticmethod
@@ -42,7 +41,6 @@ class SvgIconManager:
 
 
 class PasswordVisibilityController:
-    
     def __init__(self, line_edit: QLineEdit, parent_widget: QWidget):
         self.line_edit = line_edit
         self.parent = parent_widget
@@ -57,64 +55,23 @@ class PasswordVisibilityController:
 
         QTimer.singleShot(0, self.update_icon)
 
+    # 文字變化時的處理
     def on_text_changed(self, text: str):
-        """文字變化時的處理"""
         self.eye_action.setVisible(bool(text))  
 
+    # 切換密碼顯示/隱藏狀態
     def toggle(self):
-        """切換密碼顯示/隱藏狀態"""
         self.show_password = not self.show_password
         self.line_edit.setEchoMode(
             QLineEdit.EchoMode.Normal if self.show_password else QLineEdit.EchoMode.Password
         )
         self.update_icon()
 
+    # 更新圖標
     def update_icon(self):
-        """更新圖標"""
+        from .svg_icon_add import IconHelper
         if self.show_password:
             icon = IconHelper.get_eye_show_icon(self.parent, QSize(20, 20))
         else:
             icon = IconHelper.get_eye_hide_icon(self.parent, QSize(20, 20))
         self.eye_action.setIcon(icon)
-
-
-class IconHelper:
-    @staticmethod
-    def get_user_icon(widget: QWidget, size: QSize) -> QIcon:
-        """獲取用戶圖標"""
-        return SvgIconManager.create_icon("account.svg", color=None, size=size, widget=widget)
-    
-    @staticmethod
-    def get_clear_icon(widget: QWidget, size: QSize) -> QIcon:
-        """獲取清除圖標"""
-        return SvgIconManager.create_icon("clear.svg", color=None, size=size, widget=widget)
-    
-    @staticmethod
-    def get_search_icon(widget: QWidget, size: QSize) -> QIcon:
-        """獲取搜索圖標"""
-        return SvgIconManager.create_icon("search.svg", color=None, size=size, widget=widget)
-    
-    @staticmethod
-    def get_add_icon(widget: QWidget, size: QSize) -> QIcon:
-        """獲取添加圖標"""
-        return SvgIconManager.create_icon("add.svg", color=None, size=size, widget=widget)
-    
-    @staticmethod
-    def get_edit_icon(widget: QWidget, size: QSize) -> QIcon:
-        """獲取編輯圖標"""
-        return SvgIconManager.create_icon("edit.svg", color=None, size=size, widget=widget)
-    
-    @staticmethod
-    def get_delete_icon(widget: QWidget, size: QSize) -> QIcon:
-        """獲取刪除圖標"""
-        return SvgIconManager.create_icon("delete.svg", color=None, size=size, widget=widget)
-    
-    @staticmethod
-    def get_eye_show_icon(widget: QWidget, size: QSize) -> QIcon:
-        """獲取顯示密碼圖標（眼睛開啟）"""
-        return SvgIconManager.create_icon("show_eye.svg", color=None, size=size, widget=widget)
-    
-    @staticmethod
-    def get_eye_hide_icon(widget: QWidget, size: QSize) -> QIcon:
-        """獲取隱藏密碼圖標（眼睛關閉）"""
-        return SvgIconManager.create_icon("hide_eye.svg", color=None, size=size, widget=widget)

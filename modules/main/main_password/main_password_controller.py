@@ -35,6 +35,8 @@ class MainPasswordController:
             QMessageBox.information(self.widget, "訊息", "登入成功")
             self.widget.parent.setCentralWidget(NameListWidget(self.widget.parent))
             self.widget.parent.name_list_widget = self.widget.parent.centralWidget()
+
+            self.widget.parent.controller.login_success() # 更新登入狀態 (main_window_controller.py)
         else:
             QMessageBox.warning(self.widget, "訊息", "密碼錯誤")
 

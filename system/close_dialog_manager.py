@@ -24,7 +24,7 @@ class CloseDialogManager(QObject):
         elif close_action == "quit":
             return self.QUIT_APPLICATION
         else:
-            # 預設行為：如果有未預期的值，根據托盤可用性決定
+            # 如果有未預期的值，根據托盤可用性決定
             return self.CLOSE_TO_TRAY if tray_available else self.QUIT_APPLICATION
     
     def should_minimize_to_tray(self, tray_available=True):

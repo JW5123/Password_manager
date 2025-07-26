@@ -1,7 +1,7 @@
 import json
 import os
 from utils.path_helper import get_settings_path
-from .constants import THEMES, AUTO_LOGOUT_OPTIONS, CLOSE_ACTION_OPTIONS
+from .constants import DEFAULT_SETTINGS
 from modules.settings import ThemeSettings, SystemSettings, CategorySettings
 
 class SettingsManager:
@@ -20,26 +20,15 @@ class SettingsManager:
             try:
                 with open(self.settings_path, 'r', encoding='utf-8') as f:
                     settings = json.load(f)
-
-                    if 'theme' not in settings:
-                        settings['theme'] = "System"
-                    if 'categories' not in settings:
-                        settings['categories'] = []
-                    if 'auto_logout_timeout' not in settings:
-                        settings['auto_logout_timeout'] = 0
-                    if 'close_action' not in settings:
-                        settings['close_action'] = "tray"
+                    
+                    for key, value in DEFAULT_SETTINGS.items():
+                        settings.setdefault(key, value)
                     return settings
             except Exception as e:
                 print(f"載入設定錯誤 {e}")
         
         # 若不存在則建立預設設定
-        default = {
-            "theme": "System", 
-            "categories": [], 
-            "auto_logout_timeout": 0,
-            "close_action": "tray"
-        }
+        default = DEFAULT_SETTINGS.copy()
         self.save_settings(default)
         return default
     
