@@ -29,8 +29,8 @@ class SettingsWidget(QWidget):
         self.tab_widget = QTabWidget()
         
         # 使用輔助方法建立可滾動的分頁
-        self._add_scrollable_tab(self.category_dialog, "分類設定")
         self._add_scrollable_tab(self.system_dialog, "系統設定")
+        self._add_scrollable_tab(self.category_dialog, "分類設定")
         
         main_layout.addWidget(self.tab_widget)
 
