@@ -17,7 +17,7 @@ class PasswordManager(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowIcon(QIcon(resource_path('assets/icon/PasswordManager.ico')))
+        self.setWindowIcon(QIcon(resource_path('icon/PasswordManager.png')))
         self.setWindowTitle("密碼管理器")
         self.setGeometry(100, 100, 600, 500)
 

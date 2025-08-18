@@ -22,7 +22,7 @@ class SystemTrayManager(QObject):
             return False
 
         self.tray_icon = QSystemTrayIcon(self.parent_window)
-        icon = QIcon(resource_path('assets/icon/PasswordManager.ico'))
+        icon = QIcon(resource_path('icon/PasswordManager.ico'))
         if icon.isNull():
             icon = self.parent_window.style().standardIcon(
                 self.parent_window.style().StandardPixmap.SP_ComputerIcon
@@ -68,7 +68,7 @@ class SystemTrayManager(QObject):
         if not self.tray_icon and not self.setup_tray_icon():
             return False
         if self.tray_icon.icon().isNull():
-            icon = QIcon(resource_path('assets/icon/PasswordManager.ico'))
+            icon = QIcon(resource_path('assets/icon/PasswordManager.png'))
             if icon.isNull():
                 icon = self.parent_window.style().standardIcon(
                     self.parent_window.style().StandardPixmap.SP_ComputerIcon

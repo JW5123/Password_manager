@@ -7,7 +7,7 @@ from utils.path_helper import resource_path
 class SvgIconManager:
     @staticmethod
     def create_icon(icon_name: str, size: QSize, color: str = None, widget: QWidget = None) -> QIcon:
-        icon_path = resource_path(f"assets/icon/{icon_name}")
+        icon_path = resource_path(f"icon/{icon_name}")
 
         color = SvgIconManager.get_theme_color(widget)
 
