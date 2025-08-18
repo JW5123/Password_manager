@@ -69,6 +69,7 @@ class PasswordManager(QMainWindow):
             event.accept()
             if is_tray_available:
                 self.tray_manager.hide_tray_icon()
+            self.controller.cleanup_single_instance()
             try:
                 self.db_manager.close()
             except Exception as e:
@@ -77,8 +78,7 @@ class PasswordManager(QMainWindow):
     def changeEvent(self, event):
         from PyQt6.QtCore import QEvent
         if event.type() == QEvent.Type.WindowStateChange:
+            # 處理最小化事件
             if self.isMinimized():
-                if self.settings_manager.get_close_action() == "tray" and self.tray_manager.is_tray_available():
-                    event.ignore()
-                    self.hide()
+                pass
         super().changeEvent(event)
