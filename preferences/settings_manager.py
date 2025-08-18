@@ -87,7 +87,7 @@ class SettingsManager:
             os.makedirs(os.path.dirname(self.settings_path), exist_ok=True)
             with open(self.settings_path, 'w', encoding='utf-8') as f:
                 json.dump(self.settings, f, ensure_ascii=False, indent=2)
-            print(f"設定已儲存 {self.settings_path}")
+            # 只在 UI 層顯示訊息
             return True
         except Exception as e:
             print(f"儲存設定錯誤 {e}")

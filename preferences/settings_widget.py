@@ -62,6 +62,17 @@ class SettingsWidget(QWidget):
     def has_unsaved_changes(self):
         return (self.category_dialog.has_changes() or self.system_dialog.has_changes())
     
+    # 刷新菜單欄圖標
+    def _refresh_menu(self):
+        menu_bar = self.parent.menuBar()
+        if menu_bar:
+            # 清除現有菜單並重新創建
+            menu_bar.clear()
+            # 創建臨時UI實例來重新設置菜單
+            from modules.main.account.account_list_ui import AccountListUI
+            temp_ui = AccountListUI(self.parent)
+            temp_ui.setup_menu()
+    
     # 儲存所有設定
     def save_settings(self, show_message=True):
         success = True
@@ -84,6 +95,13 @@ class SettingsWidget(QWidget):
                 self.parent.apply_theme()
             elif hasattr(self.settings_manager, 'apply_theme'):
                 self.settings_manager.apply_theme(self.parent)
+
+            # 刷新菜單圖標
+            self._refresh_menu()
+
+            # 通知主窗口設定已更新
+            if hasattr(self.parent, 'on_settings_updated'):
+                self.parent.on_settings_updated()
 
             if hasattr(self.parent, 'tray_manager'):
                 self.parent.tray_manager.update_tray_theme()

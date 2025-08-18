@@ -28,7 +28,7 @@ class AccountListUI(QWidget):
         self.search_box.setFont(QFont("Arial", 16))
         
         # 清除按鈕
-        clear_icon = IconHelper.get_clear_icon(self.parent, QSize(20, 20))
+        clear_icon = IconHelper.get_clear_icon(self.parent, QSize(15, 15))
         self.clear_action = QAction(clear_icon, "清除", self.search_box)
         self.search_box.addAction(self.clear_action, QLineEdit.ActionPosition.TrailingPosition)
         self.clear_action.setVisible(False)

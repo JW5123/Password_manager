@@ -130,6 +130,7 @@ class SystemDialog(QWidget):
         )
         if self.temp_theme != self.theme_settings.get_theme():
             success = success and self.theme_settings.set_theme(self.temp_theme)
+        # print("設定已儲存", self.settings_manager.settings_path)
         return success
 
     def reset_changes(self):

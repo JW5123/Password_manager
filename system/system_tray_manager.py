@@ -22,7 +22,7 @@ class SystemTrayManager(QObject):
             return False
 
         self.tray_icon = QSystemTrayIcon(self.parent_window)
-        icon = QIcon(resource_path('icon/PasswordManager.ico'))
+        icon = QIcon(resource_path('assets/icon/PasswordManager.ico'))
         if icon.isNull():
             icon = self.parent_window.style().standardIcon(
                 self.parent_window.style().StandardPixmap.SP_ComputerIcon
@@ -44,7 +44,7 @@ class SystemTrayManager(QObject):
             (None, None),  # Separator
             ("關於", lambda: QMessageBox.about(self.parent_window, "關於", "密碼管理器 v2.0.0\n\n© 2024 版權所有")),
             (None, None),  # Separator
-            ("退出密碼管理器", self.quit_requested.emit)
+            ("退出", self.quit_requested.emit)
         ]
         for text, slot in actions:
             if text:
@@ -68,7 +68,7 @@ class SystemTrayManager(QObject):
         if not self.tray_icon and not self.setup_tray_icon():
             return False
         if self.tray_icon.icon().isNull():
-            icon = QIcon(resource_path('icon/PasswordManager.ico'))
+            icon = QIcon(resource_path('assets/icon/PasswordManager.ico'))
             if icon.isNull():
                 icon = self.parent_window.style().standardIcon(
                     self.parent_window.style().StandardPixmap.SP_ComputerIcon
